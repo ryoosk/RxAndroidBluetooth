@@ -27,6 +27,12 @@ import kotlinx.android.synthetic.main.activity_main.*
 import java.util.*
 import java.util.concurrent.TimeUnit
 
+/**
+ * 1.是不是所有的发送数据到 方法都支持重发等操作
+ * 2.异常创建对应的异常 这样用户可以定义对应的异常解决方案
+ * 3.检查所有异常可能产生的地方 框架的严谨性
+ * 4.
+ */
 
 class MainActivity : AppCompatActivity() {
     private val tag: String = "duo_shine"
@@ -47,13 +53,65 @@ class MainActivity : AppCompatActivity() {
                     .setServiceUuid(serviceUUID)
                     .setWriteUuid(writeUuid)
                     .build()
+        //扫描
+        startScan()
+        //连接
+        connect()
+        //发送单包数据
+        sendOnce()
+        //发送多包数据  不需要根据回调决定是否发送下一包
+        sendAutoMore()
+        //发送多包数据 根据设备返回的指令决定是否发送下一包
+        sendMore()
+    }
 
+    private fun sendMore() {
+        moreCallback.setOnClickListener {
+            val byteArray = byteArrayOf(0x1D, 0x00, 0x00, 0xC6.toByte(), 0xE1.toByte(), 0x00)
+            val list = mutableListOf(byteArray, byteArray, byteArray, byteArray, byteArray, byteArray, byteArray)
+            bluetoothController!!
+                .writeNext(list)
+                .doOnNext(Function { byte ->
+                    BluetoothNextProfile.next
+                })
+                .subscribeOn(Schedulers.io())
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe { response -> checkResult(response) }
+        }
+    }
 
+    private fun sendAutoMore() {
+        val byteArray = byteArrayOf(0x1D, 0x00, 0x00, 0xC6.toByte(), 0xE1.toByte(), 0x00)
+        val list = mutableListOf(byteArray, byteArray, byteArray, byteArray, byteArray, byteArray, byteArray)
+        more.setOnClickListener {
+            bluetoothController!!
+                .writeAuto(list)
+                .subscribeOn(Schedulers.io())
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe { response -> checkResult(response) }
+        }
+    }
+
+    private fun sendOnce() {
+        var once: Disposable? = null
+        send.setOnClickListener {
+            val byteArray = byteArrayOf(0x1D, 0x00, 0x00, 0xC6.toByte(), 0xE1.toByte(), 0x00)
+            once = bluetoothController!!
+                .writeOnce(byteArray)
+                .subscribe { response -> checkResult(response) }
+        }
+
+        ceshi1.setOnClickListener {
+            once?.dispose()
+        }
+    }
+
+    @RequiresApi(Build.VERSION_CODES.LOLLIPOP)
+    private fun startScan() {
         var dispose: Disposable? = null
         val filters = ArrayList<ScanFilter>()
         filters.add(ScanFilter.Builder().setDeviceName("TK-00000CB5").build())
         filters.add(ScanFilter.Builder().setDeviceName("TL-01020304").build())
-        //开始扫描
         scanObservable.setOnClickListener {
             dispose?.dispose()
             dispose = bluetoothController!!
@@ -74,13 +132,14 @@ class MainActivity : AppCompatActivity() {
                     { error -> Log.d(tag, "扫描出错$error") },
                     { Log.d(tag, "扫描完成") })
         }
-        //停止扫描
+
         stopScan.setOnClickListener {
             dispose?.dispose()
         }
-        var disposable: Disposable? = null
+    }
 
-        //连接
+    private fun connect() {
+        var disposable: Disposable? = null
         connect.setOnClickListener {
             disposable?.dispose()
             disposable = bluetoothController!!
@@ -95,50 +154,6 @@ class MainActivity : AppCompatActivity() {
         //断开连接
         disconnected.setOnClickListener {
             disposable?.dispose()
-        }
-
-        //发送单包数据
-        var once: Disposable? = null
-        send.setOnClickListener {
-            val byteArray = byteArrayOf(0x1D, 0x00, 0x00, 0xC6.toByte(), 0xE1.toByte(), 0x00)
-            once = bluetoothController!!
-                .writeOnce(byteArray)
-                .subscribe { response -> checkResult(response) }
-        }
-
-        ceshi1.setOnClickListener {
-            Log.d(tag, "add${add()}")
-            //            once?.dispose()
-        }
-
-        //发送多包数据  不需要根据回调决定是否发送下一包
-        val byteArray = byteArrayOf(0x1D, 0x00, 0x00, 0xC6.toByte(), 0xE1.toByte(), 0x00)
-        val list = mutableListOf(byteArray, byteArray, byteArray, byteArray, byteArray, byteArray, byteArray)
-        more.setOnClickListener {
-            bluetoothController!!
-                .writeAuto(list)
-                .subscribeOn(Schedulers.io())
-                .observeOn(AndroidSchedulers.mainThread())
-                .subscribe { response -> checkResult(response) }
-        }
-        //发送多包数据 根据设备返回的指令决定是否发送下一包
-        moreCallback.setOnClickListener {
-            /*     bluetoothController!!
-                     .writeNext(list)
-                     .doOnNext(Function { byte ->
-                         BluetoothNextProfile.next
-                     })
-                     .subscribeOn(Schedulers.io())
-                     .observeOn(AndroidSchedulers.mainThread())
-                     .subscribe { response -> checkResult(response) }*/
-            bluetoothController!!
-                .writeNext(list)
-                .doOnNext(Function { byte ->
-                    BluetoothNextProfile.next
-                })
-                .subscribeOn(Schedulers.io())
-                .observeOn(AndroidSchedulers.mainThread())
-                .subscribe { response -> checkResult(response) }
         }
     }
 

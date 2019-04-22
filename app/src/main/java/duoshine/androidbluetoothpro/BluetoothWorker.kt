@@ -56,7 +56,7 @@ interface BluetoothWorker {
 
     /*
     //设置断开自动连接
-    public abstract BluetoothBLeClass setAutoConnect(boolean isAutoConnect);  连接方式改为true试试
+    public abstract BluetoothBLeClass setAutoConnect(boolean isAutoConnect);
     在自动断开后进行连接 如果是手动断开则不进行连接
 
     //返回当前gatt对应的远程设备
@@ -68,7 +68,7 @@ interface BluetoothWorker {
     //考虑支持心跳包指令
     用户自实现 使用rx举例
 
-    //考虑支持扫描等级
+    //考虑支持扫描等级  √
     在扫描时添加函数支持 放在后面做
 
     //考虑支持传输等级
