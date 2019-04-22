@@ -1,7 +1,9 @@
 package duoshine.androidbluetoothpro.observable
 
 import android.bluetooth.BluetoothAdapter
+import android.bluetooth.BluetoothGatt
 import android.content.Context
+import android.os.Looper
 import android.text.TextUtils
 import duoshine.androidbluetoothpro.exception.BluetoothException
 import io.reactivex.Observable
@@ -24,6 +26,11 @@ class ConnectObservable private constructor(
 
     private val tag: String = "duo_shine"
 
+    /**
+     * 是否自动连接自动断开连接的设备  用户手动断开的连接不会自动重连
+     */
+    private var isAutoConnect: Boolean = false
+
     override fun subscribeActual(observer: Observer<in Response>?) {
         if (TextUtils.isEmpty(address)) {
             observer?.onError(BluetoothException("address not null"))
@@ -32,10 +39,14 @@ class ConnectObservable private constructor(
         val connectObserver = ConnectObserver(observer)
         observer?.onSubscribe(connectObserver)
         val callback = BleGattCallbackObservable
-            .create(connectObserver, serviceUuid, writeUuid, notifyUuid)
+            .create(connectObserver, serviceUuid, writeUuid, notifyUuid,isAutoConnect)
         val remoteDevice = bluetoothAdapter.getRemoteDevice(address)
         val gatt = remoteDevice.connectGatt(context, false, callback)
+        connectObserver.setBluetoothGatt(gatt)
+    }
 
+    private fun isMainThread(): Boolean {
+        return Looper.getMainLooper().thread.id == Thread.currentThread().id
     }
 
     companion object {
@@ -66,15 +77,33 @@ class ConnectObservable private constructor(
         return ConnectTimeoutObservable(this, time, timeUnit)
     }
 
+    /**
+     * 启用断开自动连接
+     */
+    fun auto(): ConnectObservable {
+        isAutoConnect = true
+        return this
+    }
+
     private class ConnectObserver(private val observer: Observer<in Response>?) : Observer<Response>, Disposable {
+        private val tag: String = "duo_shine"
+
         private var upDisposable: Disposable? = null
 
+        /**
+         * 用于取消连接
+         */
+        private var bluetoothGatt: BluetoothGatt? = null
+
         override fun isDisposed(): Boolean {
-            return upDisposable?.isDisposed ?:false
+            return upDisposable?.isDisposed ?: false
         }
 
         override fun dispose() {
-            upDisposable?.dispose()
+            bluetoothGatt?.disconnect()
+            bluetoothGatt?.close()
+            //再往上流调用dispose也就是取消连接 这里直接省略调用了
+            //upDisposable?.dispose()
         }
 
         override fun onComplete() {
@@ -91,6 +120,10 @@ class ConnectObservable private constructor(
 
         override fun onError(e: Throwable) {
             observer?.onError(e)
+        }
+
+        fun setBluetoothGatt(gatt: BluetoothGatt?) {
+            bluetoothGatt = gatt
         }
     }
 }

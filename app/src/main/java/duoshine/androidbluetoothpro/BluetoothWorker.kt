@@ -47,4 +47,11 @@ interface BluetoothWorker {
      * 蓝牙是否启用
      */
     fun isEnabled(): Boolean
+
+    /**
+     * 获取gatt对应的远程设备
+     */
+    /*fun device(): RemoteDeviceObservable {
+        return
+    }*/
 }

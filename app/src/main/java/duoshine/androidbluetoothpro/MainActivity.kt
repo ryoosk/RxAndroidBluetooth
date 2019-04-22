@@ -34,7 +34,7 @@ import java.util.concurrent.TimeUnit
  * 4.内存泄漏?
  * 5.参数或者操作符乱使用
  * 6.考虑将collback的连接监听由外部传入?
- * 7.断开自动连接功能 ---
+ * 7.断开自动连接功能  √
  * 8.返回当前gatt对应的远程设备
  * 9.支持心跳包指令-用户实现 使用rx举例
  * 10.考虑支持传输等级
@@ -71,6 +71,31 @@ class MainActivity : AppCompatActivity() {
         sendAutoMore()
         //发送多包数据 根据设备返回的指令决定是否发送下一包
         sendMore()
+        //新的连接
+        newConnect()
+        //获取gatt对应的远程设备
+        device()
+    }
+
+    private fun device() {
+        device.setOnClickListener {
+            bluetoothController!!.device()
+        }
+    }
+
+    private fun newConnect() {
+        newConnect.setOnClickListener {
+           disposable?.dispose()
+            bluetoothController!!
+                .connect("BB:A0:50:0B:23:0D")
+                .timer(6000, TimeUnit.MILLISECONDS)
+                .subscribeOn(Schedulers.io())
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe(
+                    { response -> checkResultState(response) },
+                    { error -> Log.d(tag, "error:$error") }
+                )
+        }
     }
 
     private fun sendMore() {
@@ -144,14 +169,16 @@ class MainActivity : AppCompatActivity() {
             dispose?.dispose()
         }
     }
-
+    var disposable: Disposable? = null
     private fun connect() {
-        var disposable: Disposable? = null
         connect.setOnClickListener {
-//            disposable?.dispose()
+            disposable?.dispose()
             disposable = bluetoothController!!
                 .connect("BB:A0:50:04:15:12")
+                .auto()
                 .timer(6000, TimeUnit.MILLISECONDS)
+                .subscribeOn(Schedulers.io())
+                .observeOn(AndroidSchedulers.mainThread())
                 .subscribe(
                     { response -> checkResultState(response) },
                     { error -> Log.d(tag, "error:$error") }
@@ -160,7 +187,6 @@ class MainActivity : AppCompatActivity() {
 
         //断开连接
         disconnected.setOnClickListener {
-            Log.d(tag, "disposable:${disposable?.isDisposed}")
             disposable?.dispose()
         }
     }

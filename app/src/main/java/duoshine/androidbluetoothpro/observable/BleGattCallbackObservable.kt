@@ -18,13 +18,6 @@ import java.util.*
 
 /**
  *Created by chen on 2019
- *
- *
- * 1.扫描和写操作都使用该类来操作
- * 2.外部调用还是正常的函数
- * 3.在controller中根据命令字来执行对应的命令 连接 写?
- * 4.好处是不需要更顶级的observable了 在他们中使用as来强转observer 很不优雅
- * 5.坏处是此类的代码增加 增加了更多的分支语句 可维护性阅读性更差 更容易出bug
  */
 object BleGattCallbackObservable : BluetoothGattCallback(), Disposable {
 
@@ -92,7 +85,7 @@ object BleGattCallbackObservable : BluetoothGattCallback(), Disposable {
     /**
      * 是否自动连接自动断开连接的设备  用户手动断开的连接不会自动重连
      */
-    private var isAutoConnect: Boolean = false
+    private var isAutoConnect: Boolean = true
 
     /**
      * 是否连接
@@ -108,11 +101,13 @@ object BleGattCallbackObservable : BluetoothGattCallback(), Disposable {
         observer: Observer<Response>?,
         serviceUuid: UUID?,
         writeUuid: UUID?,
-        notifyUuid: UUID?
+        notifyUuid: UUID?,
+        autoConnect: Boolean
     ): BleGattCallbackObservable {
         this.serviceUuid = serviceUuid
         this.writeUuid = writeUuid
         this.notifyUuid = notifyUuid
+        this.isAutoConnect = autoConnect
         return get(observer)
     }
 
@@ -125,7 +120,9 @@ object BleGattCallbackObservable : BluetoothGattCallback(), Disposable {
     override fun isDisposed(): Boolean = isConnect
 
     override fun dispose() {
-        disconnected()
+        isConnect = false
+        bluetoothGatt?.disconnect()
+        bluetoothGatt?.close()
     }
 
     /**
@@ -142,7 +139,6 @@ object BleGattCallbackObservable : BluetoothGattCallback(), Disposable {
         } else if (newState == BluetoothProfile.STATE_DISCONNECTED) {
             disconnected()
             onNext(BluetoothConnectProfile.disconnected)
-            autoConnect()
         }
     }
 
@@ -151,7 +147,9 @@ object BleGattCallbackObservable : BluetoothGattCallback(), Disposable {
      */
     private fun autoConnect() {
         if (isAutoConnect) {
-            //todo
+            bluetoothGatt?.connect()
+        } else {
+            bluetoothGatt?.close()
         }
     }
 
@@ -169,11 +167,7 @@ object BleGattCallbackObservable : BluetoothGattCallback(), Disposable {
     private fun disconnected() {
         isConnect = false
         bluetoothGatt?.disconnect()
-        /**
-         * close将导致onConnectionStateChange无法再接收到断开的状态了 认定为用户手动断开连接或是应用退出执行的断开连接状态
-         * 反之认为是自动断开连接了,这可能是用户关闭了设备的ble? 或者远程设备休眠等
-         */
-        bluetoothGatt?.close()
+        autoConnect()
     }
 
     /**
@@ -282,6 +276,13 @@ object BleGattCallbackObservable : BluetoothGattCallback(), Disposable {
         autoNext = false
         function = null
         writeCharacteristic(byteArray)
+    }
+
+    /**
+     *返回该GATT客户端目标的远程蓝牙设备  当前连接/上一次连接(断开中也能获取到)
+     */
+    fun device(): BluetoothDevice? {
+        return bluetoothGatt?.device
     }
 
     /**
