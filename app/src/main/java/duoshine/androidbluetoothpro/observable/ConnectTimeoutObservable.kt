@@ -1,5 +1,6 @@
 package duoshine.androidbluetoothpro.observable
 
+import android.os.Looper
 import duoshine.androidbluetoothpro.bluetoothprofile.BluetoothConnectProfile
 import io.reactivex.Observable
 import io.reactivex.Observer
@@ -19,8 +20,8 @@ class ConnectTimeoutObservable(
 
     override fun subscribeActual(observer: Observer<in Response>?) {
         val timeoutObserver = ConnectTimeoutObserver(observer)
-        source.subscribe(timeoutObserver)
         observer?.onSubscribe(timeoutObserver)
+        source.subscribe(timeoutObserver)
         timeout = Observable
             .timer(time, timeUnit)
             .subscribe {
@@ -31,7 +32,12 @@ class ConnectTimeoutObservable(
             }
     }
 
-    private class ConnectTimeoutObserver(private val observer: Observer<in Response>?) : Observer<Response>, Disposable {
+    private fun isMainThread(): Boolean {
+        return Looper.getMainLooper().thread.id == Thread.currentThread().id
+    }
+
+    private class ConnectTimeoutObserver(private val observer: Observer<in Response>?) : Observer<Response>,
+        Disposable {
         private var upstream: Disposable? = null
         private val tag: String = "duo_shine"
         /**
@@ -40,7 +46,7 @@ class ConnectTimeoutObservable(
         var isSucceed = false
 
         override fun isDisposed(): Boolean {
-            return false
+            return upstream?.isDisposed ?: false
         }
 
         override fun dispose() {

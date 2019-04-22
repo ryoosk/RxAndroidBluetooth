@@ -42,40 +42,34 @@ class BluetoothController private constructor(
      * 一般我不推荐使用该操作 为什么？
      * 原因是你知道远程ble设备他究竟有没有收到,只是Android端单方面认为写入成功 如果使用该方法 请做好测试
      */
-    override fun writeAuto(more: MutableList<ByteArray>): BleGattCallbackObservable {
-        return BleGattCallbackObservable.get(CharacteristicAutoObservable.create(more))
+    override fun writeAuto(more: MutableList<ByteArray>): CharacteristicAutoObservable {
+        return CharacteristicAutoObservable.create(more)
     }
 
     /**
      *写操作 适用于多包指令 每包都需要检验结果才能发送下一包或上一包重发
      */
-    override fun writeNext(more: MutableList<ByteArray>): BleGattCallbackObservable {
-        return BleGattCallbackObservable.get(CharacteristicNextObservable.create(more))
+    override fun writeNext(more: MutableList<ByteArray>): CharacteristicNextObservable {
+        return CharacteristicNextObservable.create(more)
     }
 
     /**
      *连接
      * address：mac地址
      */
-    override fun connect(address: String): BleGattCallbackObservable {
-        return BleGattCallbackObservable.create(
-            ConnectObservable.create(context, bluetoothAdapter!!, address),
-            serviceUuid, writeUuid, notifyUuid
-        )
-    }
-
-    /**
-     * 释放资源
-     */
-    override fun recycler() {
-
+    override fun connect(address: String): ConnectObservable {
+        return ConnectObservable.create(context, bluetoothAdapter!!, address, serviceUuid, writeUuid, notifyUuid)
+        /* BleGattCallbackObservable.create(
+             ConnectObservable.create(context, bluetoothAdapter!!, address),
+             serviceUuid, writeUuid, notifyUuid
+         )*/
     }
 
     /**
      *写操作 适用于单包指令
      */
-    override fun writeOnce(byteArray: ByteArray): BleGattCallbackObservable {
-        return BleGattCallbackObservable.get(CharacteristicOnceObservable.create(byteArray))
+    override fun writeOnce(byteArray: ByteArray): CharacteristicOnceObservable {
+        return CharacteristicOnceObservable.create(byteArray)
     }
 
     /**

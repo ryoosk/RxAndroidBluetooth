@@ -31,7 +31,15 @@ import java.util.concurrent.TimeUnit
  * 1.是不是所有的发送数据到 方法都支持重发等操作
  * 2.异常创建对应的异常 这样用户可以定义对应的异常解决方案
  * 3.检查所有异常可能产生的地方 框架的严谨性
- * 4.
+ * 4.内存泄漏?
+ * 5.参数或者操作符乱使用
+ * 6.考虑将collback的连接监听由外部传入?
+ * 7.断开自动连接功能 ---
+ * 8.返回当前gatt对应的远程设备
+ * 9.支持心跳包指令-用户实现 使用rx举例
+ * 10.考虑支持传输等级
+ * 11.考虑支持mtu扩展
+ *
  */
 
 class MainActivity : AppCompatActivity() {
@@ -93,16 +101,15 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun sendOnce() {
-        var once: Disposable? = null
         send.setOnClickListener {
             val byteArray = byteArrayOf(0x1D, 0x00, 0x00, 0xC6.toByte(), 0xE1.toByte(), 0x00)
-            once = bluetoothController!!
+            bluetoothController!!
                 .writeOnce(byteArray)
                 .subscribe { response -> checkResult(response) }
         }
 
         ceshi1.setOnClickListener {
-            once?.dispose()
+
         }
     }
 
@@ -141,7 +148,7 @@ class MainActivity : AppCompatActivity() {
     private fun connect() {
         var disposable: Disposable? = null
         connect.setOnClickListener {
-            disposable?.dispose()
+//            disposable?.dispose()
             disposable = bluetoothController!!
                 .connect("BB:A0:50:04:15:12")
                 .timer(6000, TimeUnit.MILLISECONDS)
@@ -153,6 +160,7 @@ class MainActivity : AppCompatActivity() {
 
         //断开连接
         disconnected.setOnClickListener {
+            Log.d(tag, "disposable:${disposable?.isDisposed}")
             disposable?.dispose()
         }
     }
