@@ -18,6 +18,7 @@ class CharacteristicAutoObservable private constructor(private val more: Mutable
     }
 
     companion object {
+
         fun create(more: MutableList<ByteArray>): CharacteristicAutoObservable {
             return CharacteristicAutoObservable(more)
         }

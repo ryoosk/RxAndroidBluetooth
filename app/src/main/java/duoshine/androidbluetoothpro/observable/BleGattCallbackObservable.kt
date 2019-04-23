@@ -1,7 +1,6 @@
 package duoshine.androidbluetoothpro.observable
 
 import android.bluetooth.*
-import duoshine.androidbluetoothpro.bluetoothprofile.BluetoothConnectProfile
 import duoshine.androidbluetoothpro.bluetoothprofile.BluetoothConnectProfile.Companion.enableNotifyFail
 import duoshine.androidbluetoothpro.bluetoothprofile.BluetoothConnectProfile.Companion.enableNotifySucceed
 import duoshine.androidbluetoothpro.bluetoothprofile.BluetoothConnectProfile.Companion.notifyNotFound
@@ -20,7 +19,6 @@ import java.util.*
  *Created by chen on 2019
  */
 object BleGattCallbackObservable : BluetoothGattCallback(), Disposable {
-
 
     /**
      * downstream
@@ -88,13 +86,13 @@ object BleGattCallbackObservable : BluetoothGattCallback(), Disposable {
     private var isAutoConnect: Boolean = true
 
     /**
-     * 是否连接
+     * 是否连接中
      */
     private var isConnect: Boolean = false
 
-
     init {
         linked = LinkedList()
+
     }
 
     fun create(
@@ -111,7 +109,7 @@ object BleGattCallbackObservable : BluetoothGattCallback(), Disposable {
         return get(observer)
     }
 
-    fun get(observer: Observer<Response>?): BleGattCallbackObservable {
+    fun get(observer: Observer<in Response>?): BleGattCallbackObservable {
         this.observer = observer
         observer?.onSubscribe(this)
         return this
@@ -123,6 +121,15 @@ object BleGattCallbackObservable : BluetoothGattCallback(), Disposable {
         isConnect = false
         bluetoothGatt?.disconnect()
         bluetoothGatt?.close()
+        // 单例类会持有这个引用导致内存无法释放
+        observer = null
+    }
+
+    /**
+     * 获取远程设备
+     */
+    fun getDevice(): BluetoothDevice? {
+        return bluetoothGatt?.device
     }
 
     /**
@@ -134,11 +141,8 @@ object BleGattCallbackObservable : BluetoothGattCallback(), Disposable {
             bluetoothGatt = gatt
             isConnect = true
             gatt?.discoverServices()
-            //连接上蓝牙设备
-            onNext(BluetoothConnectProfile.connected)
         } else if (newState == BluetoothProfile.STATE_DISCONNECTED) {
             disconnected()
-            onNext(BluetoothConnectProfile.disconnected)
         }
     }
 
@@ -157,7 +161,7 @@ object BleGattCallbackObservable : BluetoothGattCallback(), Disposable {
      * 对emit的数据封装
      */
     private fun onNext(state: Int, byteArray: ByteArray? = null) {
-        val response = Response(byteArray, state)
+        val response = Response(state, byteArray)
         observer?.onNext(response)
     }
 

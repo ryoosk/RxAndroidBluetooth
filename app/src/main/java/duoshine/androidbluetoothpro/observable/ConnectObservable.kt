@@ -1,10 +1,9 @@
 package duoshine.androidbluetoothpro.observable
 
-import android.bluetooth.BluetoothAdapter
-import android.bluetooth.BluetoothGatt
+import android.bluetooth.*
 import android.content.Context
-import android.os.Looper
 import android.text.TextUtils
+import duoshine.androidbluetoothpro.bluetoothprofile.BluetoothConnectProfile
 import duoshine.androidbluetoothpro.exception.BluetoothException
 import io.reactivex.Observable
 import io.reactivex.Observer
@@ -38,15 +37,28 @@ class ConnectObservable private constructor(
         }
         val connectObserver = ConnectObserver(observer)
         observer?.onSubscribe(connectObserver)
+        /**
+         * 监听gatt server端的断开连接状态 防止client的被后续的写操作的Observable覆盖导致接收不到断开的回调
+         * gattServer一定要在dispose时close 否则导致内存泄漏
+         *
+         */
+        val mBluetoothManager = context
+            .getSystemService(Context.BLUETOOTH_SERVICE) as BluetoothManager
+        val gattServer = mBluetoothManager.openGattServer(context, object : BluetoothGattServerCallback() {
+            override fun onConnectionStateChange(device: BluetoothDevice?, status: Int, newState: Int) {
+                if (newState == BluetoothProfile.STATE_CONNECTED) {
+                    observer?.onNext(Response(BluetoothConnectProfile.connected))
+                } else if (newState == BluetoothProfile.STATE_DISCONNECTED) {
+                    observer?.onNext(Response(BluetoothConnectProfile.disconnected))
+                }
+            }
+        })
+        connectObserver.setBluetoothGattServer(gattServer)
         val callback = BleGattCallbackObservable
-            .create(connectObserver, serviceUuid, writeUuid, notifyUuid,isAutoConnect)
+            .create(connectObserver, serviceUuid, writeUuid, notifyUuid, isAutoConnect)
         val remoteDevice = bluetoothAdapter.getRemoteDevice(address)
         val gatt = remoteDevice.connectGatt(context, false, callback)
         connectObserver.setBluetoothGatt(gatt)
-    }
-
-    private fun isMainThread(): Boolean {
-        return Looper.getMainLooper().thread.id == Thread.currentThread().id
     }
 
     companion object {
@@ -95,15 +107,23 @@ class ConnectObservable private constructor(
          */
         private var bluetoothGatt: BluetoothGatt? = null
 
+        /**
+         * dispose时要执行close 否则内存泄漏
+         */
+        private var gattServer: BluetoothGattServer? = null
+
         override fun isDisposed(): Boolean {
             return upDisposable?.isDisposed ?: false
         }
 
         override fun dispose() {
+            //在这里取消连接使用的bluetoothGatt是启动连接时获取的 可以取消一个正在连接中的任务 而blegattcallback中的gatt无法取消一个
+//            正在连接中的任务
             bluetoothGatt?.disconnect()
             bluetoothGatt?.close()
             //再往上流调用dispose也就是取消连接 这里直接省略调用了
-            //upDisposable?.dispose()
+            gattServer?.close()
+            upDisposable?.dispose()
         }
 
         override fun onComplete() {
@@ -124,6 +144,10 @@ class ConnectObservable private constructor(
 
         fun setBluetoothGatt(gatt: BluetoothGatt?) {
             bluetoothGatt = gatt
+        }
+
+        fun setBluetoothGattServer(gattServer: BluetoothGattServer?) {
+            this.gattServer = gattServer
         }
     }
 }

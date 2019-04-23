@@ -1,6 +1,5 @@
 package duoshine.androidbluetoothpro.observable
 
-import android.os.Looper
 import duoshine.androidbluetoothpro.bluetoothprofile.BluetoothConnectProfile
 import io.reactivex.Observable
 import io.reactivex.Observer
@@ -27,13 +26,9 @@ class ConnectTimeoutObservable(
             .subscribe {
                 //时间到后判断任务是否完成
                 if (!timeoutObserver.isSucceed) {
-                    timeoutObserver.onNext(Response(null, BluetoothConnectProfile.connectTimeout))
+                    timeoutObserver.onNext(Response(BluetoothConnectProfile.connectTimeout))
                 }
             }
-    }
-
-    private fun isMainThread(): Boolean {
-        return Looper.getMainLooper().thread.id == Thread.currentThread().id
     }
 
     private class ConnectTimeoutObserver(private val observer: Observer<in Response>?) : Observer<Response>,

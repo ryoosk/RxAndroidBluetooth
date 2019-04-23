@@ -18,7 +18,6 @@ class ScanResultConverter {
             val record = result.scanRecord
             device?.let {
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                    //大于0
                     return ScanResult(
                         device,
                         result.isLegacy,

@@ -27,6 +27,7 @@ class BluetoothController private constructor(
     private var writeUuid: UUID?
 ) : BluetoothWorker {
 
+
     private var bluetoothAdapter: BluetoothAdapter? = null
     private val tag: String = "duo_shine"
 
@@ -35,6 +36,13 @@ class BluetoothController private constructor(
         val mBluetoothManager = context
             .getSystemService(Context.BLUETOOTH_SERVICE) as BluetoothManager
         bluetoothAdapter = mBluetoothManager.adapter
+    }
+
+    /**
+     * 获取gatt对应的远程设备
+     */
+    override fun device(): RemoteDeviceObservable {
+        return RemoteDeviceObservable.create()
     }
 
     /**
@@ -59,10 +67,6 @@ class BluetoothController private constructor(
      */
     override fun connect(address: String): ConnectObservable {
         return ConnectObservable.create(context, bluetoothAdapter!!, address, serviceUuid, writeUuid, notifyUuid)
-        /* BleGattCallbackObservable.create(
-             ConnectObservable.create(context, bluetoothAdapter!!, address),
-             serviceUuid, writeUuid, notifyUuid
-         )*/
     }
 
     /**

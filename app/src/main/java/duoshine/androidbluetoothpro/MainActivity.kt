@@ -1,7 +1,6 @@
 package duoshine.androidbluetoothpro
 
 import android.Manifest
-import android.annotation.TargetApi
 import android.bluetooth.BluetoothDevice
 import android.bluetooth.le.ScanFilter
 import android.content.pm.PackageManager
@@ -26,20 +25,20 @@ import io.reactivex.schedulers.Schedulers
 import kotlinx.android.synthetic.main.activity_main.*
 import java.util.*
 import java.util.concurrent.TimeUnit
+import kotlin.collections.ArrayList
 
 /**
- * 1.是不是所有的发送数据到 方法都支持重发等操作
+ * 1.是不是所有的发送数据到 方法都支持重发等操作  ×
  * 2.异常创建对应的异常 这样用户可以定义对应的异常解决方案
- * 3.检查所有异常可能产生的地方 框架的严谨性
- * 4.内存泄漏?
- * 5.参数或者操作符乱使用
- * 6.考虑将collback的连接监听由外部传入?
+ * 3.检查所有异常可能产生的地方 框架的严谨性  √
+ * 4.内存泄漏?  √
+ * 5.参数或者操作符乱使用 √
+ * 6.考虑将collback的连接监听由外部传入? 用户估计会懵逼 ×
  * 7.断开自动连接功能  √
- * 8.返回当前gatt对应的远程设备
+ * 8.返回当前gatt对应的远程设备  √
  * 9.支持心跳包指令-用户实现 使用rx举例
- * 10.考虑支持传输等级
- * 11.考虑支持mtu扩展
- *
+ * 10.考虑支持传输等级  当前版本不支持 ×
+ * 11.考虑支持mtu扩展 当前版本不支持 ×
  */
 
 class MainActivity : AppCompatActivity() {
@@ -51,50 +50,51 @@ class MainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
-        requestPermission()
+//        requestPermission()
+
         val serviceUUID = UUID.fromString("f000c0e0-0451-4000-b000-000000000000")
         val notifyUUID = UUID.fromString("f000c0e1-0451-4000-b000-000000000000")
         val writeUuid = UUID.fromString("f000c0e1-0451-4000-b000-000000000000")
+
         bluetoothController =
                 BluetoothController.Builder(this)
                     .setNotifyUuid(notifyUUID)
                     .setServiceUuid(serviceUUID)
                     .setWriteUuid(writeUuid)
                     .build()
-        //扫描
+        //扫描  测试完毕 虽然在扫描中退出会导致停止扫描持有this无法释放 但是在停止扫描后 会释放
         startScan()
-        //连接
+        //连接  测试完毕
         connect()
-        //发送单包数据
+        //发送单包数据  测试完毕
         sendOnce()
         //发送多包数据  不需要根据回调决定是否发送下一包
         sendAutoMore()
         //发送多包数据 根据设备返回的指令决定是否发送下一包
         sendMore()
-        //新的连接
-        newConnect()
         //获取gatt对应的远程设备
         device()
+        newConnect()
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        scanDispose?.dispose()
+        connectDisposable?.dispose()
     }
 
     private fun device() {
         device.setOnClickListener {
             bluetoothController!!.device()
+                .subscribe {
+                    Log.d(tag, "device:${it.name}")
+                }
         }
     }
 
     private fun newConnect() {
         newConnect.setOnClickListener {
-           disposable?.dispose()
-            bluetoothController!!
-                .connect("BB:A0:50:0B:23:0D")
-                .timer(6000, TimeUnit.MILLISECONDS)
-                .subscribeOn(Schedulers.io())
-                .observeOn(AndroidSchedulers.mainThread())
-                .subscribe(
-                    { response -> checkResultState(response) },
-                    { error -> Log.d(tag, "error:$error") }
-                )
+
         }
     }
 
@@ -107,8 +107,6 @@ class MainActivity : AppCompatActivity() {
                 .doOnNext(Function { byte ->
                     BluetoothNextProfile.next
                 })
-                .subscribeOn(Schedulers.io())
-                .observeOn(AndroidSchedulers.mainThread())
                 .subscribe { response -> checkResult(response) }
         }
     }
@@ -130,6 +128,8 @@ class MainActivity : AppCompatActivity() {
             val byteArray = byteArrayOf(0x1D, 0x00, 0x00, 0xC6.toByte(), 0xE1.toByte(), 0x00)
             bluetoothController!!
                 .writeOnce(byteArray)
+                .subscribeOn(Schedulers.io())
+                .observeOn(AndroidSchedulers.mainThread())
                 .subscribe { response -> checkResult(response) }
         }
 
@@ -138,25 +138,23 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
+    var scanDispose: Disposable? = null
     @RequiresApi(Build.VERSION_CODES.LOLLIPOP)
     private fun startScan() {
-        var dispose: Disposable? = null
         val filters = ArrayList<ScanFilter>()
         filters.add(ScanFilter.Builder().setDeviceName("TK-00000CB5").build())
         filters.add(ScanFilter.Builder().setDeviceName("TL-01020304").build())
         scanObservable.setOnClickListener {
-            dispose?.dispose()
-            dispose = bluetoothController!!
+            //scanDispose?.dispose()
+            scanDispose = bluetoothController!!
                 .startLeScan(null, filters)
                 .timer(6000, TimeUnit.MILLISECONDS)
-                .subscribeOn(Schedulers.io())
                 .filter { response ->
                     !TextUtils.isEmpty(response.getDevice()?.name)
                 }
                 .map {
                     it.getDevice()
                 }
-                .observeOn(AndroidSchedulers.mainThread())
                 .subscribe(
                     {
                         checkScanResult(it)
@@ -166,19 +164,19 @@ class MainActivity : AppCompatActivity() {
         }
 
         stopScan.setOnClickListener {
-            dispose?.dispose()
+            scanDispose?.dispose()
         }
     }
-    var disposable: Disposable? = null
+
+    var connectDisposable: Disposable? = null
     private fun connect() {
         connect.setOnClickListener {
-            disposable?.dispose()
-            disposable = bluetoothController!!
+            connectDisposable = bluetoothController!!
                 .connect("BB:A0:50:04:15:12")
-                .auto()
-                .timer(6000, TimeUnit.MILLISECONDS)
-                .subscribeOn(Schedulers.io())
-                .observeOn(AndroidSchedulers.mainThread())
+//                .auto()
+//                .timer(6000, TimeUnit.MILLISECONDS)
+//                .subscribeOn(Schedulers.io())
+//                .observeOn(AndroidSchedulers.mainThread())
                 .subscribe(
                     { response -> checkResultState(response) },
                     { error -> Log.d(tag, "error:$error") }
@@ -187,16 +185,13 @@ class MainActivity : AppCompatActivity() {
 
         //断开连接
         disconnected.setOnClickListener {
-            disposable?.dispose()
+            connectDisposable?.dispose()
         }
     }
 
     private fun checkScanResult(it: BluetoothDevice?) {
         Log.d(tag, " 扫描到设备:${it!!.name}")
     }
-
-    @TargetApi(Build.VERSION_CODES.P)
-    private fun add() = 2
 
     private fun checkResultState(response: Response) {
         when (response.code) {

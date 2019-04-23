@@ -6,7 +6,9 @@ import android.bluetooth.le.ScanCallback
 import android.bluetooth.le.ScanFilter
 import android.bluetooth.le.ScanSettings
 import android.os.Build
+import android.os.Looper
 import android.support.annotation.RequiresApi
+import android.util.Log
 import duoshine.androidbluetoothpro.exception.BluetoothException
 import duoshine.androidbluetoothpro.util.ScanResult
 import duoshine.androidbluetoothpro.util.ScanResultConverter
@@ -15,6 +17,7 @@ import io.reactivex.Observer
 import io.reactivex.disposables.Disposable
 import java.util.*
 import java.util.concurrent.TimeUnit
+
 
 /**
  *Created by chen on 2019
@@ -68,6 +71,10 @@ class ScanLeObservable private constructor(
         }
     }
 
+    private fun isMainThread(): Boolean {
+        return Looper.getMainLooper().thread.id == Thread.currentThread().id
+    }
+
     /**
      * 定时扫描  不指定时间默认6秒 不调用timer 则扫描不会停止 直到dispose
      */
@@ -79,7 +86,7 @@ class ScanLeObservable private constructor(
      * < LOLLIPOP
      */
     private class LeScanCallbackObserver(
-        private val observer: Observer<in ScanResult>?,
+        private var observer: Observer<in ScanResult>?,
         private val bluetoothAdapter: BluetoothAdapter?
     ) : BluetoothAdapter.LeScanCallback, Disposable {
 
@@ -90,7 +97,10 @@ class ScanLeObservable private constructor(
         }
 
         override fun dispose() {
+            Log.d(tag, "< LOLLIPOP-dispose")
             bluetoothAdapter?.stopLeScan(this)
+            //不指定内存泄漏 由于bluetoothLeScanner持有这个callback
+            observer = null
         }
 
         override fun onLeScan(device: BluetoothDevice?, rssi: Int, scanRecord: ByteArray?) {
@@ -108,7 +118,7 @@ class ScanLeObservable private constructor(
      */
     @RequiresApi(Build.VERSION_CODES.LOLLIPOP)
     private class ScanCallbackObserver(
-        private val observer: Observer<in ScanResult>?,
+        private var observer: Observer<in ScanResult>?,
         private val bluetoothAdapter: BluetoothAdapter?
     ) : Disposable, ScanCallback() {
 
@@ -119,9 +129,11 @@ class ScanLeObservable private constructor(
         }
 
         override fun dispose() {
-            val scanner = bluetoothAdapter?.bluetoothLeScanner ?: return
-            //note:这里极可能为null 比如蓝牙未开启
-            scanner.stopScan(this)
+            val scanner = bluetoothAdapter?.bluetoothLeScanner
+            scanner?.stopScan(this)
+            Log.d(tag, "> LOLLIPOP-dispose")
+            //不指定内存泄漏 由于bluetoothLeScanner持有这个callback
+            observer = null
         }
 
         override fun onScanResult(callbackType: Int, result: android.bluetooth.le.ScanResult?) {

@@ -9,7 +9,7 @@ import java.util.concurrent.TimeUnit
 /**
  *Created by chen on 2019
  */
-class ScanTimerObservable(
+ class ScanTimerObservable(
     private val source: Observable<ScanResult>,
     private val time: Long,
     private val timeUnit: TimeUnit
