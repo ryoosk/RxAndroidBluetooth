@@ -86,9 +86,11 @@ class MainActivity : AppCompatActivity() {
     private fun device() {
         device.setOnClickListener {
             bluetoothController!!.device()
-                .subscribe {
-                    Log.d(tag, "device:${it.name}")
-                }
+                .subscribe(
+                    { Log.d(tag, "device:${it.name}") },
+                    { error -> checkError(error) },
+                    { Log.d(tag, "获取远程设备完成") }
+                )
         }
     }
 
@@ -145,9 +147,8 @@ class MainActivity : AppCompatActivity() {
         filters.add(ScanFilter.Builder().setDeviceName("TK-00000CB5").build())
         filters.add(ScanFilter.Builder().setDeviceName("TL-01020304").build())
         scanObservable.setOnClickListener {
-            //scanDispose?.dispose()
-            scanDispose = bluetoothController!!
-                .startLeScan(null, filters)
+            scanDispose =    bluetoothController!!
+                .startLeScan()
                 .timer(6000, TimeUnit.MILLISECONDS)
                 .filter { response ->
                     !TextUtils.isEmpty(response.getDevice()?.name)
@@ -155,12 +156,13 @@ class MainActivity : AppCompatActivity() {
                 .map {
                     it.getDevice()
                 }
+                .subscribeOn(Schedulers.io())
+                .observeOn(AndroidSchedulers.mainThread())
                 .subscribe(
-                    {
-                        checkScanResult(it)
-                    },
-                    { error -> Log.d(tag, "扫描出错$error") },
+                    { checkScanResult(it) },
+                    { error -> checkError(error) },
                     { Log.d(tag, "扫描完成") })
+
         }
 
         stopScan.setOnClickListener {
@@ -168,18 +170,20 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
+    private fun checkError(error: Throwable) {
+        Log.d(tag, "error:$error")
+    }
+
     var connectDisposable: Disposable? = null
     private fun connect() {
         connect.setOnClickListener {
             connectDisposable = bluetoothController!!
                 .connect("BB:A0:50:04:15:12")
-//                .auto()
-//                .timer(6000, TimeUnit.MILLISECONDS)
-//                .subscribeOn(Schedulers.io())
-//                .observeOn(AndroidSchedulers.mainThread())
+                .auto()
+                .timer(6000, TimeUnit.MILLISECONDS)
                 .subscribe(
                     { response -> checkResultState(response) },
-                    { error -> Log.d(tag, "error:$error") }
+                    { error -> checkError(error) }
                 )
         }
 

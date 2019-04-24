@@ -4,7 +4,8 @@ import android.bluetooth.*
 import android.content.Context
 import android.text.TextUtils
 import duoshine.androidbluetoothpro.bluetoothprofile.BluetoothConnectProfile
-import duoshine.androidbluetoothpro.exception.BluetoothException
+import duoshine.androidbluetoothpro.exception.AddressNullPointException
+import duoshine.androidbluetoothpro.exception.BluetoothAdapterNullPointException
 import io.reactivex.Observable
 import io.reactivex.Observer
 import io.reactivex.disposables.Disposable
@@ -32,7 +33,15 @@ class ConnectObservable private constructor(
 
     override fun subscribeActual(observer: Observer<in Response>?) {
         if (TextUtils.isEmpty(address)) {
-            observer?.onError(BluetoothException("address not null"))
+            observer?.onError(AddressNullPointException("address not null"))
+            return
+        }
+        if (bluetoothAdapter == null) {
+            observer?.onError(BluetoothAdapterNullPointException("bluetoothAdapter not null"))
+            return
+        }
+        if (bluetoothAdapter.state == BluetoothAdapter.STATE_OFF) {
+            observer?.onError(BluetoothAdapterNullPointException("本地蓝牙适配器已关闭 请打开本地蓝牙适配器"))
             return
         }
         val connectObserver = ConnectObserver(observer)

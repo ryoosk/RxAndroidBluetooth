@@ -1,6 +1,7 @@
 package duoshine.androidbluetoothpro.observable
 
 import android.bluetooth.*
+import android.util.Log
 import duoshine.androidbluetoothpro.bluetoothprofile.BluetoothConnectProfile.Companion.enableNotifyFail
 import duoshine.androidbluetoothpro.bluetoothprofile.BluetoothConnectProfile.Companion.enableNotifySucceed
 import duoshine.androidbluetoothpro.bluetoothprofile.BluetoothConnectProfile.Companion.notifyNotFound
@@ -115,6 +116,10 @@ object BleGattCallbackObservable : BluetoothGattCallback(), Disposable {
         return this
     }
 
+    fun get(): BleGattCallbackObservable {
+        return this
+    }
+
     override fun isDisposed(): Boolean = isConnect
 
     override fun dispose() {
@@ -128,7 +133,8 @@ object BleGattCallbackObservable : BluetoothGattCallback(), Disposable {
     /**
      * 获取远程设备
      */
-    fun getDevice(): BluetoothDevice? {
+    fun getDevice(): BluetoothDevice?{
+        Log.d(tag, "---${bluetoothGatt?.device?.address}")
         return bluetoothGatt?.device
     }
 
@@ -136,7 +142,6 @@ object BleGattCallbackObservable : BluetoothGattCallback(), Disposable {
      * 断开 | 连接状态监听
      */
     override fun onConnectionStateChange(gatt: BluetoothGatt?, status: Int, newState: Int) {
-        super.onConnectionStateChange(gatt, status, newState)
         if (newState == BluetoothProfile.STATE_CONNECTED) {
             bluetoothGatt = gatt
             isConnect = true
