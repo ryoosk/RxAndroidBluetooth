@@ -50,6 +50,7 @@ interface BluetoothWorker {
 
     /**
      * 蓝牙是否启用
+     * true为已打开
      */
     fun isEnabled(): Boolean
 
@@ -59,4 +60,10 @@ interface BluetoothWorker {
      * 将会缓存远程设备名称,故可以获取到,反之如果没扫描过,也就是未缓存自然也就获取不到远程设备名称,使用时请做好判断
      */
     fun device(): RemoteDeviceObservable
+
+    /**
+     * 开启蓝牙
+     * true表示已启动适配器
+     */
+    fun enable(): Boolean
 }

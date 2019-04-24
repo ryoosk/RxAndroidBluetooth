@@ -77,6 +77,11 @@ class BluetoothController private constructor(
     }
 
     /**
+     * 开启蓝牙
+     */
+    override fun enable(): Boolean = bluetoothAdapter?.enable() ?: false
+
+    /**
      * 蓝牙是否启用
      */
     override fun isEnabled(): Boolean = bluetoothAdapter?.isEnabled ?: false

@@ -126,12 +126,16 @@ class ConnectObservable private constructor(
         }
 
         override fun dispose() {
-            //在这里取消连接使用的bluetoothGatt是启动连接时获取的 可以取消一个正在连接中的任务 而blegattcallback中的gatt无法取消一个
-//            正在连接中的任务
+            /**
+             * 取消连接状态监听 注意要放在  bluetoothGatt?.close()前 否则他会触发一次断开的状态给外部 这是不必要的
+             */
+            gattServer?.close()
+            /**
+             *  在这里取消连接使用的bluetoothGatt是启动连接时获取的 可以取消一个正在连接中的任务
+             *  而blegattcallback中的gatt无法取消一个正在连接中的任务
+             */
             bluetoothGatt?.disconnect()
             bluetoothGatt?.close()
-            //再往上流调用dispose也就是取消连接 这里直接省略调用了
-            gattServer?.close()
             upDisposable?.dispose()
         }
 

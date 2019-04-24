@@ -58,12 +58,12 @@ class ConnectTimeoutObservable(
 
         override fun onNext(t: Response) {
             observer?.onNext(t)
-            //成功
-            if (t.code == BluetoothConnectProfile.connected) {
-                isSucceed = true
-            } else if (t.code == BluetoothConnectProfile.connectTimeout) {
-                //超时
-                dispose()
+            when {
+                t.code == BluetoothConnectProfile.connected -> isSucceed = true
+                //超时执行dispose的目的是取消一个正在进行中的连接
+                t.code == BluetoothConnectProfile.connectTimeout -> dispose()
+                //防止有一种情况是没有连接成功 但是状态确给了连接断开(确实有) 既然连接任务已经不在继续了 就停止超时判断
+                t.code == BluetoothConnectProfile.disconnected -> isSucceed = true
             }
         }
 

@@ -124,17 +124,14 @@ object BleGattCallbackObservable : BluetoothGattCallback(), Disposable {
 
     override fun dispose() {
         isConnect = false
-        bluetoothGatt?.disconnect()
-        bluetoothGatt?.close()
-        // 单例类会持有这个引用导致内存无法释放
+        //单例类会持有这个引用导致内存无法释放
         observer = null
     }
 
     /**
      * 获取远程设备
      */
-    fun getDevice(): BluetoothDevice?{
-        Log.d(tag, "---${bluetoothGatt?.device?.address}")
+    fun getDevice(): BluetoothDevice? {
         return bluetoothGatt?.device
     }
 
@@ -156,6 +153,7 @@ object BleGattCallbackObservable : BluetoothGattCallback(), Disposable {
      */
     private fun autoConnect() {
         if (isAutoConnect) {
+            Log.d(tag, "开启自动重连任务")
             bluetoothGatt?.connect()
         } else {
             bluetoothGatt?.close()
@@ -235,7 +233,7 @@ object BleGattCallbackObservable : BluetoothGattCallback(), Disposable {
     private fun displayGattServices(gatt: BluetoothGatt?) {
         val service = gatt?.getService(serviceUuid)
         if (service == null) {
-            onNext(notifyNotFound)
+            onNext(serviceNotfound)
             return
         }
         val notifyCharacteristic = service.getCharacteristic(notifyUuid)
@@ -251,6 +249,7 @@ object BleGattCallbackObservable : BluetoothGattCallback(), Disposable {
             //更新此描述符的本地存储值
             descriptor.value = BluetoothGattDescriptor.ENABLE_NOTIFICATION_VALUE
             gatt.writeDescriptor(descriptor)
+            Log.d(tag, "启动通知是否成功:$result")
             onNext(
                 if (result) {
                     enableNotifySucceed
@@ -258,7 +257,7 @@ object BleGattCallbackObservable : BluetoothGattCallback(), Disposable {
                     enableNotifyFail
                 }
             )
-        } ?: onNext(serviceNotfound)
+        } ?: onNext(notifyNotFound)
     }
 
     /**
