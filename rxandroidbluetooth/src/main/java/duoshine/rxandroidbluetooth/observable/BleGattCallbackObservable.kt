@@ -1,6 +1,8 @@
 package duoshine.androidbluetoothpro.observable
 
 import android.bluetooth.*
+import android.util.Log
+import duoshine.androidbluetoothpro.bluetoothprofile.BluetoothConnectProfile
 import duoshine.androidbluetoothpro.bluetoothprofile.BluetoothConnectProfile.Companion.enableNotifyFail
 import duoshine.androidbluetoothpro.bluetoothprofile.BluetoothConnectProfile.Companion.enableNotifySucceed
 import duoshine.androidbluetoothpro.bluetoothprofile.BluetoothConnectProfile.Companion.notifyNotFound
@@ -115,13 +117,15 @@ object BleGattCallbackObservable : BluetoothGattCallback(), Disposable {
         return this
     }
 
+    fun get(): BleGattCallbackObservable {
+        return this
+    }
+
     override fun isDisposed(): Boolean = isConnect
 
     override fun dispose() {
         isConnect = false
-        bluetoothGatt?.disconnect()
-        bluetoothGatt?.close()
-        // 单例类会持有这个引用导致内存无法释放
+        //单例类会持有这个引用导致内存无法释放
         observer = null
     }
 
@@ -136,7 +140,6 @@ object BleGattCallbackObservable : BluetoothGattCallback(), Disposable {
      * 断开 | 连接状态监听
      */
     override fun onConnectionStateChange(gatt: BluetoothGatt?, status: Int, newState: Int) {
-        super.onConnectionStateChange(gatt, status, newState)
         if (newState == BluetoothProfile.STATE_CONNECTED) {
             bluetoothGatt = gatt
             isConnect = true
@@ -151,6 +154,7 @@ object BleGattCallbackObservable : BluetoothGattCallback(), Disposable {
      */
     private fun autoConnect() {
         if (isAutoConnect) {
+            onNext(BluetoothConnectProfile.reconnection)
             bluetoothGatt?.connect()
         } else {
             bluetoothGatt?.close()
@@ -230,7 +234,7 @@ object BleGattCallbackObservable : BluetoothGattCallback(), Disposable {
     private fun displayGattServices(gatt: BluetoothGatt?) {
         val service = gatt?.getService(serviceUuid)
         if (service == null) {
-            onNext(notifyNotFound)
+            onNext(serviceNotfound)
             return
         }
         val notifyCharacteristic = service.getCharacteristic(notifyUuid)
@@ -246,6 +250,7 @@ object BleGattCallbackObservable : BluetoothGattCallback(), Disposable {
             //更新此描述符的本地存储值
             descriptor.value = BluetoothGattDescriptor.ENABLE_NOTIFICATION_VALUE
             gatt.writeDescriptor(descriptor)
+            Log.d(tag, "启动通知是否成功:$result")
             onNext(
                 if (result) {
                     enableNotifySucceed
@@ -253,7 +258,7 @@ object BleGattCallbackObservable : BluetoothGattCallback(), Disposable {
                     enableNotifyFail
                 }
             )
-        } ?: onNext(serviceNotfound)
+        } ?: onNext(notifyNotFound)
     }
 
     /**

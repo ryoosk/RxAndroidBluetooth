@@ -14,9 +14,7 @@ import android.text.TextUtils
 import android.util.Log
 import duoshine.androidbluetoothpro.bluetoothprofile.BluetoothConnectProfile
 import duoshine.androidbluetoothpro.bluetoothprofile.BluetoothNextProfile
-import duoshine.androidbluetoothpro.bluetoothprofile.BluetoothWriteProfile.Companion.characteristicChanged
-import duoshine.androidbluetoothpro.bluetoothprofile.BluetoothWriteProfile.Companion.writeFail
-import duoshine.androidbluetoothpro.bluetoothprofile.BluetoothWriteProfile.Companion.writeSucceed
+import duoshine.androidbluetoothpro.bluetoothprofile.BluetoothWriteProfile
 import duoshine.androidbluetoothpro.observable.Response
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.disposables.Disposable
@@ -51,7 +49,6 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 //        requestPermission()
-
         val serviceUUID = UUID.fromString("f000c0e0-0451-4000-b000-000000000000")
         val notifyUUID = UUID.fromString("f000c0e1-0451-4000-b000-000000000000")
         val writeUuid = UUID.fromString("f000c0e1-0451-4000-b000-000000000000")
@@ -147,7 +144,7 @@ class MainActivity : AppCompatActivity() {
         filters.add(ScanFilter.Builder().setDeviceName("TK-00000CB5").build())
         filters.add(ScanFilter.Builder().setDeviceName("TL-01020304").build())
         scanObservable.setOnClickListener {
-            scanDispose =    bluetoothController!!
+            scanDispose = bluetoothController!!
                 .startLeScan()
                 .timer(6000, TimeUnit.MILLISECONDS)
                 .filter { response ->
@@ -162,7 +159,6 @@ class MainActivity : AppCompatActivity() {
                     { checkScanResult(it) },
                     { error -> checkError(error) },
                     { Log.d(tag, "扫描完成") })
-
         }
 
         stopScan.setOnClickListener {
@@ -206,14 +202,15 @@ class MainActivity : AppCompatActivity() {
             BluetoothConnectProfile.enableNotifyFail -> Log.d(tag, "启用通知特征失败")
             BluetoothConnectProfile.serviceNotfound -> Log.d(tag, "未获取到对应uuid的服务特征")
             BluetoothConnectProfile.notifyNotFound -> Log.d(tag, "未获取到对应uuid的通知特征")
+            BluetoothConnectProfile.reconnection -> Log.d(tag, "重连中")
         }
     }
 
     private fun checkResult(response: Response) {
         when (response.code) {
-            writeSucceed -> Log.d(tag, "写入成功")
-            writeFail -> Log.d(tag, "写入失败")
-            characteristicChanged -> Log.d(tag, "收到新值-${Arrays.toString(response.data)}")
+            BluetoothWriteProfile.writeSucceed -> Log.d(tag, "写入成功")
+            BluetoothWriteProfile.writeFail -> Log.d(tag, "写入失败")
+            BluetoothWriteProfile.characteristicChanged -> Log.d(tag, "收到新值-${Arrays.toString(response.data)}")
         }
     }
 

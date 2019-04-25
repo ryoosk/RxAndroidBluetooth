@@ -56,9 +56,9 @@ class ConnectObservable private constructor(
         val gattServer = mBluetoothManager.openGattServer(context, object : BluetoothGattServerCallback() {
             override fun onConnectionStateChange(device: BluetoothDevice?, status: Int, newState: Int) {
                 if (newState == BluetoothProfile.STATE_CONNECTED) {
-                    observer?.onNext(Response(BluetoothConnectProfile.connected))
+                    connectObserver.onNext(Response(BluetoothConnectProfile.connected))
                 } else if (newState == BluetoothProfile.STATE_DISCONNECTED) {
-                    observer?.onNext(Response(BluetoothConnectProfile.disconnected))
+                    connectObserver.onNext(Response(BluetoothConnectProfile.disconnected))
                 }
             }
         })

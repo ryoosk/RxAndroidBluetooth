@@ -9,16 +9,16 @@ class BluetoothWriteProfile {
         /**
          * 写入成功
          */
-        val writeSucceed = 8
+        val writeSucceed = 16
 
         /**
          * 写入失败
          */
-        val writeFail = 9
+        val writeFail = 17
 
         /**
          *  Characteristic变化 new值
          */
-        val characteristicChanged = 10
+        val characteristicChanged = 18
     }
 }

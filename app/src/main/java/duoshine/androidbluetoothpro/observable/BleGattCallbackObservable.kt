@@ -2,6 +2,7 @@ package duoshine.androidbluetoothpro.observable
 
 import android.bluetooth.*
 import android.util.Log
+import duoshine.androidbluetoothpro.bluetoothprofile.BluetoothConnectProfile
 import duoshine.androidbluetoothpro.bluetoothprofile.BluetoothConnectProfile.Companion.enableNotifyFail
 import duoshine.androidbluetoothpro.bluetoothprofile.BluetoothConnectProfile.Companion.enableNotifySucceed
 import duoshine.androidbluetoothpro.bluetoothprofile.BluetoothConnectProfile.Companion.notifyNotFound
@@ -153,7 +154,7 @@ object BleGattCallbackObservable : BluetoothGattCallback(), Disposable {
      */
     private fun autoConnect() {
         if (isAutoConnect) {
-            Log.d(tag, "开启自动重连任务")
+            onNext(BluetoothConnectProfile.reconnection)
             bluetoothGatt?.connect()
         } else {
             bluetoothGatt?.close()

@@ -14,8 +14,8 @@ interface BluetoothWorker {
      * filters:filter 不传则不过滤 过滤规则用调用者处理 这个规则它可能是： name? address? uuid?....
      */
     fun startLeScan(
-        settings: ScanSettings?,
-        filters: MutableList<ScanFilter>?
+        settings: ScanSettings? = null,
+        filters: MutableList<ScanFilter>? = null
     ): ScanLeObservable
 
     /**
@@ -50,11 +50,20 @@ interface BluetoothWorker {
 
     /**
      * 蓝牙是否启用
+     * true为已打开
      */
     fun isEnabled(): Boolean
 
     /**
      * 获取gatt对应的远程设备(不处于连接中也可以调用)  这个设备可能是当前正在连接的设备或是上一次连接的设备
+     * 这个方法在测试中发现并不是极稳定 address可以稳定获取 但是远程设备名称并不是很稳定，原因是此名称是蓝牙适配器在扫描时
+     * 将会缓存远程设备名称,故可以获取到,反之如果没扫描过,也就是未缓存自然也就获取不到远程设备名称,使用时请做好判断
      */
     fun device(): RemoteDeviceObservable
+
+    /**
+     * 开启蓝牙
+     * true表示已启动适配器
+     */
+    fun enable(): Boolean
 }

@@ -65,8 +65,8 @@ import java.util.concurrent.TimeUnit
         }
 
         override fun onError(e: Throwable) {
+            cancel()
             observer?.onError(e)
-//            cancel()
         }
 
         /**

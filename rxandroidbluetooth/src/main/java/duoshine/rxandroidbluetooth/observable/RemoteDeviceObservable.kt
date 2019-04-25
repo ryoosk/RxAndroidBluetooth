@@ -1,7 +1,7 @@
 package duoshine.androidbluetoothpro.observable
 
 import android.bluetooth.BluetoothDevice
-import duoshine.androidbluetoothpro.exception.BluetoothException
+import duoshine.androidbluetoothpro.exception.DeviceNotFoundException
 import io.reactivex.Observable
 import io.reactivex.Observer
 
@@ -10,11 +10,13 @@ import io.reactivex.Observer
  */
 class RemoteDeviceObservable : Observable<BluetoothDevice>() {
 
+    private val tag: String = "duo_shine"
+
     override fun subscribeActual(observer: Observer<in BluetoothDevice?>?) {
-        val callback = BleGattCallbackObservable.get(null)
+        val callback = BleGattCallbackObservable.get()
         val device = callback.getDevice()
         if (device == null) {
-            observer?.onError(BluetoothException("device获取失败"))
+            observer?.onError(DeviceNotFoundException("device null"))
         } else {
             observer?.onNext(device)
             observer?.onComplete()

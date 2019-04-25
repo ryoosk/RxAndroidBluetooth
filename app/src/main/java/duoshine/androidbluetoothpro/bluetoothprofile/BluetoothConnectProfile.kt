@@ -39,5 +39,10 @@ class BluetoothConnectProfile {
          * 未获取到对应uuid的通知特征
          */
         val notifyNotFound = 7
+
+        /**
+         * 正在重连
+         */
+        val reconnection = 8
     }
 }

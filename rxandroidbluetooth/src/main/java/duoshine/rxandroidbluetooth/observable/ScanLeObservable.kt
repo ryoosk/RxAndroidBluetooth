@@ -6,10 +6,10 @@ import android.bluetooth.le.ScanCallback
 import android.bluetooth.le.ScanFilter
 import android.bluetooth.le.ScanSettings
 import android.os.Build
-import android.os.Looper
 import android.support.annotation.RequiresApi
 import android.util.Log
-import duoshine.androidbluetoothpro.exception.BluetoothException
+import duoshine.androidbluetoothpro.exception.BluetoothAdapterNullPointException
+import duoshine.androidbluetoothpro.exception.BluetoothLeScannerNullPointException
 import duoshine.androidbluetoothpro.util.ScanResult
 import duoshine.androidbluetoothpro.util.ScanResultConverter
 import io.reactivex.Observable
@@ -42,11 +42,10 @@ class ScanLeObservable private constructor(
     /**
      * 1.扫描模式可传入
      * 2.指定过滤的服务uuid
-     * 3.
      */
     override fun subscribeActual(observer: Observer<in ScanResult>?) {
         if (bluetoothAdapter == null) {
-            observer?.onError(BluetoothException("bluetoothAdapter not null"))
+            observer?.onError(BluetoothAdapterNullPointException("bluetoothAdapter not null"))
             return
         }
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
@@ -55,7 +54,7 @@ class ScanLeObservable private constructor(
             val scanner = bluetoothAdapter.bluetoothLeScanner
             //note:这里极可能为null 比如蓝牙未开启
             if (scanner == null) {
-                observer?.onError(BluetoothException("bluetooth not in the STATE_ON or STATE_BLE_ON"))
+                observer?.onError(BluetoothLeScannerNullPointException("本地蓝牙适配器不处于 STATE_ON or STATE_BLE_ON"))
                 return
             }
             settings = settings ?: ScanSettings.Builder()
@@ -69,10 +68,6 @@ class ScanLeObservable private constructor(
             observer?.onSubscribe(scanCallback)
             bluetoothAdapter.startLeScan(scanCallback)
         }
-    }
-
-    private fun isMainThread(): Boolean {
-        return Looper.getMainLooper().thread.id == Thread.currentThread().id
     }
 
     /**
@@ -103,12 +98,8 @@ class ScanLeObservable private constructor(
             observer = null
         }
 
-        override fun onLeScan(device: BluetoothDevice?, rssi: Int, scanRecord: ByteArray?) {
-            val convert = ScanResultConverter.convert0(device, rssi, scanRecord)
-            if (convert == null) {
-                observer?.onError(BluetoothException("device is null"))
-                return
-            }
+        override fun onLeScan(device: BluetoothDevice, rssi: Int, scanRecord: ByteArray) {
+            val convert = ScanResultConverter.convert0(device, rssi, scanRecord) ?: return
             observer?.onNext(convert)
         }
     }
@@ -136,16 +127,8 @@ class ScanLeObservable private constructor(
             observer = null
         }
 
-        override fun onScanResult(callbackType: Int, result: android.bluetooth.le.ScanResult?) {
-            if (result == null) {
-                observer?.onError(BluetoothException("ScanResult is null"))
-                return
-            }
-            val convert = ScanResultConverter.convert(callbackType, result)
-            if (convert == null) {
-                observer?.onError(BluetoothException("device is null"))
-                return
-            }
+        override fun onScanResult(callbackType: Int, result: android.bluetooth.le.ScanResult) {
+            val convert = ScanResultConverter.convert(callbackType, result) ?: return
             observer?.onNext(convert)
         }
     }

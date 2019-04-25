@@ -4,7 +4,8 @@ import android.bluetooth.*
 import android.content.Context
 import android.text.TextUtils
 import duoshine.androidbluetoothpro.bluetoothprofile.BluetoothConnectProfile
-import duoshine.androidbluetoothpro.exception.BluetoothException
+import duoshine.androidbluetoothpro.exception.AddressNullPointException
+import duoshine.androidbluetoothpro.exception.BluetoothAdapterNullPointException
 import io.reactivex.Observable
 import io.reactivex.Observer
 import io.reactivex.disposables.Disposable
@@ -32,7 +33,15 @@ class ConnectObservable private constructor(
 
     override fun subscribeActual(observer: Observer<in Response>?) {
         if (TextUtils.isEmpty(address)) {
-            observer?.onError(BluetoothException("address not null"))
+            observer?.onError(AddressNullPointException("address not null"))
+            return
+        }
+        if (bluetoothAdapter == null) {
+            observer?.onError(BluetoothAdapterNullPointException("bluetoothAdapter not null"))
+            return
+        }
+        if (bluetoothAdapter.state == BluetoothAdapter.STATE_OFF) {
+            observer?.onError(BluetoothAdapterNullPointException("本地蓝牙适配器已关闭 请打开本地蓝牙适配器"))
             return
         }
         val connectObserver = ConnectObserver(observer)
@@ -47,9 +56,9 @@ class ConnectObservable private constructor(
         val gattServer = mBluetoothManager.openGattServer(context, object : BluetoothGattServerCallback() {
             override fun onConnectionStateChange(device: BluetoothDevice?, status: Int, newState: Int) {
                 if (newState == BluetoothProfile.STATE_CONNECTED) {
-                    observer?.onNext(Response(BluetoothConnectProfile.connected))
+                    connectObserver.onNext(Response(BluetoothConnectProfile.connected))
                 } else if (newState == BluetoothProfile.STATE_DISCONNECTED) {
-                    observer?.onNext(Response(BluetoothConnectProfile.disconnected))
+                    connectObserver.onNext(Response(BluetoothConnectProfile.disconnected))
                 }
             }
         })
@@ -117,12 +126,16 @@ class ConnectObservable private constructor(
         }
 
         override fun dispose() {
-            //在这里取消连接使用的bluetoothGatt是启动连接时获取的 可以取消一个正在连接中的任务 而blegattcallback中的gatt无法取消一个
-//            正在连接中的任务
+            /**
+             * 取消连接状态监听 注意要放在  bluetoothGatt?.close()前 否则他会触发一次断开的状态给外部 这是不必要的
+             */
+            gattServer?.close()
+            /**
+             *  在这里取消连接使用的bluetoothGatt是启动连接时获取的 可以取消一个正在连接中的任务
+             *  而blegattcallback中的gatt无法取消一个正在连接中的任务
+             */
             bluetoothGatt?.disconnect()
             bluetoothGatt?.close()
-            //再往上流调用dispose也就是取消连接 这里直接省略调用了
-            gattServer?.close()
             upDisposable?.dispose()
         }
 

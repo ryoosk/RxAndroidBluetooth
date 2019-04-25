@@ -9,16 +9,16 @@ class BluetoothScanProfile {
         /**
          * 扫描开始
          */
-        val startScan = 0
+        val startScan = 13
 
         /**
          * 扫描中
          */
-        val scanning = 1
+        val scanning = 14
 
         /**
          * 扫描完成
          */
-        val scanned = 2
+        val scanned = 15
     }
 }
