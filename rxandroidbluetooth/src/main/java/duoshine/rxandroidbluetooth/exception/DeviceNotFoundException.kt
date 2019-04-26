@@ -1,6 +1,6 @@
-package duoshine.androidbluetoothpro.exception
+package duoshine.rxandroidbluetooth.exception
 
 /**
  *Created by chen on 2019
  */
-class DeviceNotFoundException(message:String) :BluetoothException(message)
+class DeviceNotFoundException(message:String) : BluetoothException(message)

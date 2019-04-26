@@ -1,8 +1,8 @@
-package duoshine.androidbluetoothpro
+package duoshine.rxandroidbluetooth
 
 import android.bluetooth.le.ScanFilter
 import android.bluetooth.le.ScanSettings
-import duoshine.androidbluetoothpro.observable.*
+import duoshine.rxandroidbluetooth.observable.*
 
 /**
  *Created by chen on 2019

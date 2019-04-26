@@ -1,5 +1,4 @@
-package duoshine.androidbluetoothpro.bluetoothprofile
-
+package duoshine.rxandroidbluetooth.bluetoothprofile
 /**
  *Created by chen on 2019
  */

@@ -1,16 +1,16 @@
-package duoshine.androidbluetoothpro.observable
-
+package duoshine.rxandroidbluetooth.observable
 import android.bluetooth.*
 import android.util.Log
-import duoshine.androidbluetoothpro.bluetoothprofile.BluetoothConnectProfile
-import duoshine.androidbluetoothpro.bluetoothprofile.BluetoothConnectProfile.Companion.enableNotifyFail
-import duoshine.androidbluetoothpro.bluetoothprofile.BluetoothConnectProfile.Companion.enableNotifySucceed
-import duoshine.androidbluetoothpro.bluetoothprofile.BluetoothConnectProfile.Companion.notifyNotFound
-import duoshine.androidbluetoothpro.bluetoothprofile.BluetoothConnectProfile.Companion.serviceNotfound
-import duoshine.androidbluetoothpro.bluetoothprofile.BluetoothNextProfile
-import duoshine.androidbluetoothpro.bluetoothprofile.BluetoothWriteProfile
-import duoshine.androidbluetoothpro.bluetoothprofile.BluetoothWriteProfile.Companion.writeFail
-import duoshine.androidbluetoothpro.bluetoothprofile.BluetoothWriteProfile.Companion.writeSucceed
+import duoshine.rxandroidbluetooth.bluetoothprofile.BluetoothConnectProfile
+import duoshine.rxandroidbluetooth.bluetoothprofile.BluetoothConnectProfile.Companion.enableNotifyFail
+import duoshine.rxandroidbluetooth.bluetoothprofile.BluetoothConnectProfile.Companion.enableNotifySucceed
+import duoshine.rxandroidbluetooth.bluetoothprofile.BluetoothConnectProfile.Companion.notifyNotFound
+import duoshine.rxandroidbluetooth.bluetoothprofile.BluetoothConnectProfile.Companion.serviceNotfound
+import duoshine.rxandroidbluetooth.bluetoothprofile.BluetoothNextProfile
+import duoshine.rxandroidbluetooth.bluetoothprofile.BluetoothWriteProfile
+import duoshine.rxandroidbluetooth.bluetoothprofile.BluetoothWriteProfile.Companion.writeFail
+import duoshine.rxandroidbluetooth.bluetoothprofile.BluetoothWriteProfile.Companion.writeSucceed
+
 import io.reactivex.Observer
 import io.reactivex.disposables.Disposable
 import io.reactivex.functions.Function
@@ -104,15 +104,15 @@ object BleGattCallbackObservable : BluetoothGattCallback(), Disposable {
         notifyUuid: UUID?,
         autoConnect: Boolean
     ): BleGattCallbackObservable {
-        this.serviceUuid = serviceUuid
-        this.writeUuid = writeUuid
-        this.notifyUuid = notifyUuid
-        this.isAutoConnect = autoConnect
+        BleGattCallbackObservable.serviceUuid = serviceUuid
+        BleGattCallbackObservable.writeUuid = writeUuid
+        BleGattCallbackObservable.notifyUuid = notifyUuid
+        isAutoConnect = autoConnect
         return get(observer)
     }
 
     fun get(observer: Observer<in Response>?): BleGattCallbackObservable {
-        this.observer = observer
+        BleGattCallbackObservable.observer = observer
         observer?.onSubscribe(this)
         return this
     }
@@ -309,7 +309,7 @@ object BleGattCallbackObservable : BluetoothGattCallback(), Disposable {
      * 非自动写操作函数 收到doOnNext结果 决定是否发送下一包
      */
     fun writeNextCharacteristic(more: MutableList<ByteArray>, function: Function<ByteArray, Int>?) {
-        this.function = function
+        BleGattCallbackObservable.function = function
         autoNext = false
         clear()
         addAll(more)

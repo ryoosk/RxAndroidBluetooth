@@ -1,6 +1,6 @@
-package duoshine.androidbluetoothpro.observable
+package duoshine.rxandroidbluetooth.observable
 
-import duoshine.androidbluetoothpro.bluetoothprofile.BluetoothConnectProfile
+import duoshine.rxandroidbluetooth.bluetoothprofile.BluetoothConnectProfile
 import io.reactivex.Observable
 import io.reactivex.Observer
 import io.reactivex.disposables.Disposable

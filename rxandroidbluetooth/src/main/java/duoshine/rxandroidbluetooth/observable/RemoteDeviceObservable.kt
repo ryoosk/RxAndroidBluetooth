@@ -1,7 +1,7 @@
-package duoshine.androidbluetoothpro.observable
+package duoshine.rxandroidbluetooth.observable
 
 import android.bluetooth.BluetoothDevice
-import duoshine.androidbluetoothpro.exception.DeviceNotFoundException
+import duoshine.rxandroidbluetooth.exception.DeviceNotFoundException
 import io.reactivex.Observable
 import io.reactivex.Observer
 

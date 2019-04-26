@@ -1,4 +1,4 @@
-package duoshine.androidbluetoothpro.util
+package duoshine.rxandroidbluetooth.util
 
 import android.bluetooth.BluetoothDevice
 import android.os.Build

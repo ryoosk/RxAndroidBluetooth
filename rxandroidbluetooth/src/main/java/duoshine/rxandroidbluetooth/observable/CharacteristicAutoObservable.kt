@@ -1,4 +1,4 @@
-package duoshine.androidbluetoothpro.observable
+package duoshine.rxandroidbluetooth.observable
 
 import io.reactivex.Observable
 import io.reactivex.Observer

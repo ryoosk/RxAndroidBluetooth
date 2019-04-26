@@ -1,5 +1,3 @@
-package duoshine.androidbluetoothpro
-
 import android.Manifest
 import android.bluetooth.BluetoothDevice
 import android.bluetooth.le.ScanFilter
@@ -12,10 +10,13 @@ import android.support.v4.app.ActivityCompat
 import android.support.v7.app.AppCompatActivity
 import android.text.TextUtils
 import android.util.Log
-import duoshine.androidbluetoothpro.bluetoothprofile.BluetoothConnectProfile
-import duoshine.androidbluetoothpro.bluetoothprofile.BluetoothNextProfile
-import duoshine.androidbluetoothpro.bluetoothprofile.BluetoothWriteProfile
-import duoshine.androidbluetoothpro.observable.Response
+import duoshine.androidbluetoothpro.R
+import duoshine.rxandroidbluetooth.BluetoothController
+import duoshine.rxandroidbluetooth.BluetoothWorker
+import duoshine.rxandroidbluetooth.bluetoothprofile.BluetoothConnectProfile
+import duoshine.rxandroidbluetooth.bluetoothprofile.BluetoothNextProfile
+import duoshine.rxandroidbluetooth.bluetoothprofile.BluetoothWriteProfile
+import duoshine.rxandroidbluetooth.observable.Response
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.disposables.Disposable
 import io.reactivex.functions.Function
@@ -23,7 +24,6 @@ import io.reactivex.schedulers.Schedulers
 import kotlinx.android.synthetic.main.activity_main.*
 import java.util.*
 import java.util.concurrent.TimeUnit
-import kotlin.collections.ArrayList
 
 /**
  * 1.是不是所有的发送数据到 方法都支持重发等操作  ×
@@ -48,7 +48,7 @@ class MainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
-//        requestPermission()
+        requestPermission()
         val serviceUUID = UUID.fromString("f000c0e0-0451-4000-b000-000000000000")
         val notifyUUID = UUID.fromString("f000c0e1-0451-4000-b000-000000000000")
         val writeUuid = UUID.fromString("f000c0e1-0451-4000-b000-000000000000")
@@ -138,6 +138,7 @@ class MainActivity : AppCompatActivity() {
     }
 
     var scanDispose: Disposable? = null
+
     @RequiresApi(Build.VERSION_CODES.LOLLIPOP)
     private fun startScan() {
         val filters = ArrayList<ScanFilter>()

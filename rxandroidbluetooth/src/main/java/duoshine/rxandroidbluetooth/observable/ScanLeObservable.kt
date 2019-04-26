@@ -1,4 +1,4 @@
-package duoshine.androidbluetoothpro.observable
+package duoshine.rxandroidbluetooth.observable
 
 import android.bluetooth.BluetoothAdapter
 import android.bluetooth.BluetoothDevice
@@ -8,10 +8,10 @@ import android.bluetooth.le.ScanSettings
 import android.os.Build
 import android.support.annotation.RequiresApi
 import android.util.Log
-import duoshine.androidbluetoothpro.exception.BluetoothAdapterNullPointException
-import duoshine.androidbluetoothpro.exception.BluetoothLeScannerNullPointException
-import duoshine.androidbluetoothpro.util.ScanResult
-import duoshine.androidbluetoothpro.util.ScanResultConverter
+import duoshine.rxandroidbluetooth.exception.BluetoothAdapterNullPointException
+import duoshine.rxandroidbluetooth.exception.BluetoothLeScannerNullPointException
+import duoshine.rxandroidbluetooth.util.ScanResult
+import duoshine.rxandroidbluetooth.util.ScanResultConverter
 import io.reactivex.Observable
 import io.reactivex.Observer
 import io.reactivex.disposables.Disposable
@@ -49,7 +49,7 @@ class ScanLeObservable private constructor(
             return
         }
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-            val scanCallback = ScanLeObservable.ScanCallbackObserver(observer, bluetoothAdapter)
+            val scanCallback = ScanCallbackObserver(observer, bluetoothAdapter)
             observer?.onSubscribe(scanCallback)
             val scanner = bluetoothAdapter.bluetoothLeScanner
             //note:这里极可能为null 比如蓝牙未开启
@@ -64,7 +64,7 @@ class ScanLeObservable private constructor(
             scanner.startScan(filters, settings, scanCallback)
         } else {
             //开始扫描
-            val scanCallback = ScanLeObservable.LeScanCallbackObserver(observer, bluetoothAdapter)
+            val scanCallback = LeScanCallbackObserver(observer, bluetoothAdapter)
             observer?.onSubscribe(scanCallback)
             bluetoothAdapter.startLeScan(scanCallback)
         }

@@ -1,11 +1,11 @@
-package duoshine.androidbluetoothpro.observable
+package duoshine.rxandroidbluetooth.observable
 
 import android.bluetooth.*
 import android.content.Context
 import android.text.TextUtils
-import duoshine.androidbluetoothpro.bluetoothprofile.BluetoothConnectProfile
-import duoshine.androidbluetoothpro.exception.AddressNullPointException
-import duoshine.androidbluetoothpro.exception.BluetoothAdapterNullPointException
+import duoshine.rxandroidbluetooth.bluetoothprofile.BluetoothConnectProfile
+import duoshine.rxandroidbluetooth.exception.AddressNullPointException
+import duoshine.rxandroidbluetooth.exception.BluetoothAdapterNullPointException
 import io.reactivex.Observable
 import io.reactivex.Observer
 import io.reactivex.disposables.Disposable

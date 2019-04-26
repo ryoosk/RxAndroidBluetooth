@@ -1,4 +1,4 @@
-package duoshine.androidbluetoothpro.util
+package duoshine.rxandroidbluetooth.util
 
 import android.bluetooth.le.ScanRecord
 import android.os.ParcelUuid
@@ -159,7 +159,7 @@ class ScanRecord {
      *
      * @param scanRecord The scan record of Bluetooth LE advertisement and/or scan response.
      */
-      fun parseFromBytes(scanRecord: ByteArray?): duoshine.androidbluetoothpro.util.ScanRecord? {
+      fun parseFromBytes(scanRecord: ByteArray?): duoshine.rxandroidbluetooth.util.ScanRecord? {
         if (scanRecord == null) {
             return null
         }

@@ -1,4 +1,4 @@
-package duoshine.androidbluetoothpro.observable
+package duoshine.rxandroidbluetooth.observable
 
 /**
  *Created by chen on 2019
