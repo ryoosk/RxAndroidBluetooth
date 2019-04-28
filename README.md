@@ -20,7 +20,7 @@
 开启扫描,如果你的设备>=6.0请自行处理好定位权限,代码：
 	
 		scanDispose = bluetoothController!!
-                .startLeScan()
+		.startLeScan()
 		.subscribe(
                     { checkScanResult(it) },
                     { error -> checkError(error) },
@@ -42,8 +42,8 @@ ps:每次扫描任务之前都需要.dispose(),否则你将开启两个扫描任
 写操作-适用于单包指令,代码：
 	
 	 bluetoothController!!
-                .writeOnce(byteArray)
-			    .subscribe { response -> checkResult(response) }
+		.writeOnce(byteArray)
+		.subscribe { response -> checkResult(response) }
 
 
 使用它你只需要处理Response就可以了,Response的处理极为简单,只需要一个通用的解析函数即可：
@@ -61,8 +61,8 @@ ps:每次扫描任务之前都需要.dispose(),否则你将开启两个扫描任
 
 
 	  bluetoothController!!
-                .writeAuto(list)
-                .subscribe { response -> checkResult(response) }
+		.writeAuto(list)
+		.subscribe { response -> checkResult(response) }
 
 我通常不建议使用此函数来执行写操作,它的执行原理是写入成功即发送下一包,它的结果处理:
 
