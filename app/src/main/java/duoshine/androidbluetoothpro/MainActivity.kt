@@ -1,3 +1,5 @@
+package duoshine.androidbluetoothpro
+
 import android.Manifest
 import android.bluetooth.BluetoothDevice
 import android.bluetooth.le.ScanFilter
@@ -10,7 +12,6 @@ import android.support.v4.app.ActivityCompat
 import android.support.v7.app.AppCompatActivity
 import android.text.TextUtils
 import android.util.Log
-import duoshine.androidbluetoothpro.R
 import duoshine.rxandroidbluetooth.BluetoothController
 import duoshine.rxandroidbluetooth.BluetoothWorker
 import duoshine.rxandroidbluetooth.bluetoothprofile.BluetoothConnectProfile
@@ -42,12 +43,15 @@ import java.util.concurrent.TimeUnit
 class MainActivity : AppCompatActivity() {
     private val tag: String = "duo_shine"
     private var bluetoothController: BluetoothWorker? = null
-
+    private var timer: Timer? = null
+    private var timer2: Timer? = null
 
     @RequiresApi(Build.VERSION_CODES.LOLLIPOP)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
+        timer = Timer()
+        timer2 = Timer()
         requestPermission()
         val serviceUUID = UUID.fromString("f000c0e0-0451-4000-b000-000000000000")
         val notifyUUID = UUID.fromString("f000c0e1-0451-4000-b000-000000000000")
@@ -92,8 +96,37 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun newConnect() {
+        val byteArray = byteArrayOf(0x1D, 0x00, 0x00, 0xC6.toByte(), 0xE1.toByte(), 0x00)
+        val list = mutableListOf(byteArray, byteArray, byteArray, byteArray, byteArray, byteArray, byteArray)
         newConnect.setOnClickListener {
+            timer!!.schedule(object : TimerTask() {
+                override fun run() {
+                    while (true) {
+                        Thread.sleep(20)
+                        bluetoothController!!
+                            .writeNext(list)
+                            .observeOn(AndroidSchedulers.mainThread())
+                            .subscribe { response ->
+                                checkResult(response)
+                            }
+                    }
+                }
+            }, 20)
 
+            timer2!!.schedule(object : TimerTask() {
+                override fun run() {
+                    while (true) {
+                        Thread.sleep(20)
+                        bluetoothController!!
+                            .writeNext(list)
+                            .observeOn(AndroidSchedulers.mainThread())
+                            .subscribe { response ->
+                                checkResult(response)
+                            }
+                    }
+                }
+
+            }, 20)
         }
     }
 
@@ -175,7 +208,7 @@ class MainActivity : AppCompatActivity() {
     private fun connect() {
         connect.setOnClickListener {
             connectDisposable = bluetoothController!!
-                .connect("BB:A0:50:04:15:12")
+                .connect("BB:A0:50:04:15:12")//BB-A0-50-04-15-12
                 .auto()
                 .timer(6000, TimeUnit.MILLISECONDS)
                 .subscribe(

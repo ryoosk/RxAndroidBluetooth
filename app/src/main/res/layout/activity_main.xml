@@ -56,7 +56,16 @@
                 android:layout_width="match_parent"
                 android:id="@+id/newConnect"
                 android:background="@color/colorAccent"
-                android:text="新的连接"
+                android:text="1号测试"
+                android:layout_height="wrap_content"/>
+
+        <Button
+                android:layout_marginTop="20dp"
+                android:textAllCaps="false"
+                android:layout_width="match_parent"
+                android:id="@+id/newConnect1"
+                android:background="@color/colorAccent"
+                android:text="2号测试"
                 android:layout_height="wrap_content"/>
 
         <Button
