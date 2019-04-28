@@ -24,7 +24,7 @@ tips:所有可操作Api都在BluetoothWorker中.下面挨个介绍,使用不分�
 		scanDispose = bluetoothController!!
                 .startLeScan()
                 .timer(6000, TimeUnit.MILLISECONDS)
-				.subscribe(
+		.subscribe(
                     { checkScanResult(it) },
                     { error -> checkError(error) },
                     { Log.d(tag, "扫描完成") })
