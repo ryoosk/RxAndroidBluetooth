@@ -1,13 +1,16 @@
 # RxAndroidBluetooth
+
+
 基于rxjava2的ble库
+
 
 #### 初始化
 
 	private var bluetoothController: BluetoothWorker? = null
 
 	
-			bluetoothController = BluetoothController
-					.Builder(this)
+		bluetoothController = BluetoothController
+		    .Builder(this)
                     .setNotifyUuid(notifyUUID)
                     .setServiceUuid(serviceUUID)
                     .setWriteUuid(writeUuid)
@@ -21,7 +24,7 @@ tips:所有可操作Api都在BluetoothWorker中.下面挨个介绍,使用不分�
 		scanDispose = bluetoothController!!
                 .startLeScan()
                 .timer(6000, TimeUnit.MILLISECONDS)
-				.subscribe(
+		.subscribe(
                     { checkScanResult(it) },
                     { error -> checkError(error) },
                     { Log.d(tag, "扫描完成") })
@@ -43,19 +46,19 @@ ps:每次扫描任务之前都需要.dispose(),否则你将开启两个扫描任
 	
 	 bluetoothController!!
                 .writeOnce(byteArray)
-			     .subscribe(
+		.subscribe(
                     { response -> checkResult(response) },
-                    {error->checkError(error)}
+                    { error -> checkError(error) }
                 )
 
 
 使用它你只需要处理Response就可以了,Response的处理极为简单,只需要一个通用的解析函数即可：
 	
 	 private fun checkResult(response: Response) {
-        when (response.code) {
-            BluetoothWriteProfile.writeSucceed -> Log.d(tag, "写入成功")
-            BluetoothWriteProfile.writeFail -> Log.d(tag, "写入失败")
-            BluetoothWriteProfile.characteristicChanged -> Log.d(tag, "收到新值-${Arrays.toString(response.data)}")
+              when (response.code) {
+		    BluetoothWriteProfile.writeSucceed -> Log.d(tag, "写入成功")
+		    BluetoothWriteProfile.writeFail -> Log.d(tag, "写入失败")
+		    BluetoothWriteProfile.characteristicChanged -> Log.d(tag, "收到新值-${Arrays.toString(response.data)}")
         }
     }
 
@@ -67,17 +70,17 @@ ps:每次扫描任务之前都需要.dispose(),否则你将开启两个扫描任
                 .writeAuto(list)
                 .subscribe(
                     { response -> checkResult(response) },
-                    {error->checkError(error)}
+                    { error -> checkError(error) }
                 )
 
 我通常不建议使用此函数来执行写操作,它的执行原理是写入成功即发送下一包,它的结果处理:
 
 	
 	private fun checkResult(response: Response) {
-        when (response.code) {
-            BluetoothWriteProfile.writeSucceed -> Log.d(tag, "写入成功")
-            BluetoothWriteProfile.writeFail -> Log.d(tag, "写入失败")
-            BluetoothWriteProfile.characteristicChanged -> Log.d(tag, "收到新值-${Arrays.toString(response.data)}")
+        	when (response.code) {
+		    BluetoothWriteProfile.writeSucceed -> Log.d(tag, "写入成功")
+		    BluetoothWriteProfile.writeFail -> Log.d(tag, "写入失败")
+		    BluetoothWriteProfile.characteristicChanged -> Log.d(tag, "收到新值-${Arrays.toString(response.data)}")
         }
     }
 
@@ -93,7 +96,7 @@ ps:每次扫描任务之前都需要.dispose(),否则你将开启两个扫描任
                 })
                 .subscribe(
                     { response -> checkResult(response) },
-                    {error->checkError(error)}
+                    { error -> checkError(error) }
                 )
 
 使用此函数你只需要实现doOnNext(非rxjava原生，而是RxAndroidBluetooth的),它接收一个Function<ByteArray,Int>，输入类型是当前包返回的结果,调用者也许需要对此远程设备返回的数据进行效验？解密？或其他操作来决定是否继续发送下一包,请查看BluetoothNextProfile中的功能码,它支持重发等其他操作
