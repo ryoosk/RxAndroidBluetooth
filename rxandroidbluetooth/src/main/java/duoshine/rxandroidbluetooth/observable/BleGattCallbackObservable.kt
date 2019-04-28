@@ -1,6 +1,6 @@
 package duoshine.rxandroidbluetooth.observable
+
 import android.bluetooth.*
-import android.util.Log
 import duoshine.rxandroidbluetooth.bluetoothprofile.BluetoothConnectProfile
 import duoshine.rxandroidbluetooth.bluetoothprofile.BluetoothConnectProfile.Companion.enableNotifyFail
 import duoshine.rxandroidbluetooth.bluetoothprofile.BluetoothConnectProfile.Companion.enableNotifySucceed
@@ -8,9 +8,7 @@ import duoshine.rxandroidbluetooth.bluetoothprofile.BluetoothConnectProfile.Comp
 import duoshine.rxandroidbluetooth.bluetoothprofile.BluetoothConnectProfile.Companion.serviceNotfound
 import duoshine.rxandroidbluetooth.bluetoothprofile.BluetoothNextProfile
 import duoshine.rxandroidbluetooth.bluetoothprofile.BluetoothWriteProfile
-import duoshine.rxandroidbluetooth.bluetoothprofile.BluetoothWriteProfile.Companion.writeFail
 import duoshine.rxandroidbluetooth.bluetoothprofile.BluetoothWriteProfile.Companion.writeSucceed
-
 import io.reactivex.Observer
 import io.reactivex.disposables.Disposable
 import io.reactivex.functions.Function
@@ -94,7 +92,6 @@ object BleGattCallbackObservable : BluetoothGattCallback(), Disposable {
 
     init {
         linked = LinkedList()
-
     }
 
     fun create(
@@ -250,7 +247,6 @@ object BleGattCallbackObservable : BluetoothGattCallback(), Disposable {
             //更新此描述符的本地存储值
             descriptor.value = BluetoothGattDescriptor.ENABLE_NOTIFICATION_VALUE
             gatt.writeDescriptor(descriptor)
-            Log.d(tag, "启动通知是否成功:$result")
             onNext(
                 if (result) {
                     enableNotifySucceed
@@ -264,9 +260,10 @@ object BleGattCallbackObservable : BluetoothGattCallback(), Disposable {
     /**
      * 写操作函数
      */
+    @Synchronized
     private fun writeCharacteristic(byteArray: ByteArray?) {
         if (writeCharacteristic == null || bluetoothGatt == null || byteArray == null) {
-            onNext(writeFail, byteArray)
+            onNext(BluetoothWriteProfile.writeFail, byteArray)
             return
         }
         writeCharacteristic?.value = byteArray
@@ -274,7 +271,7 @@ object BleGattCallbackObservable : BluetoothGattCallback(), Disposable {
         //记录此byte 用来在重发时使用
         oldNext = byteArray
         if (!result) {
-            onNext(writeFail, byteArray)
+            onNext(BluetoothWriteProfile.writeFail, byteArray)
         }
     }
 
@@ -297,17 +294,20 @@ object BleGattCallbackObservable : BluetoothGattCallback(), Disposable {
     /**
      * 自动写操作函数 收到写入成功 自动下一包
      */
+    @Synchronized
     fun writeAutoCharacteristic(more: MutableList<ByteArray>) {
         autoNext = true
         function = null
         clear()
         addAll(more)
         loop()
+
     }
 
     /**
      * 非自动写操作函数 收到doOnNext结果 决定是否发送下一包
      */
+    @Synchronized
     fun writeNextCharacteristic(more: MutableList<ByteArray>, function: Function<ByteArray, Int>?) {
         BleGattCallbackObservable.function = function
         autoNext = false
