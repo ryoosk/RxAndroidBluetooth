@@ -21,14 +21,7 @@
 	
 		scanDispose = bluetoothController!!
                 .startLeScan()
-                .timer(6000, TimeUnit.MILLISECONDS)
-                .filter { response ->
-                    !TextUtils.isEmpty(response.getDevice()?.name)
-                }
-                .map {
-                    it.getDevice()
-                }
-				.subscribe(
+		.subscribe(
                     { checkScanResult(it) },
                     { error -> checkError(error) },
                     { Log.d(tag, "扫描完成") })
@@ -158,4 +151,6 @@ ps:每次连接任务之前最好都需要.dispose(),否则你将开启两个连
 
 
 #### note:
-你可能需要在不需要扫描及断开连接的地方合适地调用dispose，这和平时使用rxjava是一样的,避免内存泄漏
+你可能需要在不需要扫描及断开连接的地方合适地调用dispose，这和平时使用rxjava是一样的,避免内存泄漏   
+你如果不处理onError,那么它将由Android捕获
+
