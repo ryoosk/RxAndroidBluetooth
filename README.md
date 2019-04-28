@@ -16,7 +16,7 @@
   tips:所有可操作Api都在BluetoothWorker中.下面挨个介绍,使用不分先后顺序
 
 
-#### 1.startLeScan
+### 1.startLeScan
 开启扫描,如果你的设备>=6.0请自行处理好定位权限,代码：
 	
 		scanDispose = bluetoothController!!
@@ -38,7 +38,7 @@ timer(非rxjava原生的静态操作符)定时扫描,如果不使用则一直扫
 
 ps:每次扫描任务之前都需要.dispose(),否则你将开启两个扫描任务,这点很容易理解和rxjava+retrofit使用是一样的,你开启了两个request
 
-#### 2.writeOnce
+### 2.writeOnce
 写操作-适用于单包指令,代码：
 	
 	 bluetoothController!!
@@ -56,7 +56,7 @@ ps:每次扫描任务之前都需要.dispose(),否则你将开启两个扫描任
         }
     } 
 
-#### 3.writeAuto
+### 3.writeAuto
 写操作-适用于多包指令,它的表现形式是自动发送,接收一个list<ByteArray>集合
 
 
@@ -76,7 +76,7 @@ ps:每次扫描任务之前都需要.dispose(),否则你将开启两个扫描任
     }
 
 
-#### 4.writeNext
+### 4.writeNext
 写操作-适用于多包指令,它的表现形式是调用者决定是否发送下一包,接收一个list<ByteArray>集合
 
 
@@ -90,7 +90,7 @@ ps:每次扫描任务之前都需要.dispose(),否则你将开启两个扫描任
 使用此函数你只需要实现doOnNext(非rxjava原生，而是RxAndroidBluetooth的),它接收一个Function<ByteArray,Int>，输入类型是当前包返回的结果,调用者也许需要对此远程设备返回的数据进行效验？解密？或其他操作来决定是否继续发送下一包,请查看BluetoothNextProfile中的功能码,它支持重发等其他操作
 
 
-#### 5.connect
+### 5.connect
 连接远程设备
 
 	 connectDisposable = bluetoothController!!
@@ -127,12 +127,12 @@ connect支持连接超时限制,你只需要一个timer操作符即可实现
 
 ps:每次连接任务之前最好都需要.dispose(),否则你将开启两个连接任务
 
-#### 6.isEnabled
+### 6.isEnabled
 蓝牙是否启用
 
 	bluetoothController!!.isEnabled()
 
-#### 7.device
+### 7.device
 获取gatt对应的远程设备(不处于连接中也可以调用)  这个设备可能是当前正在连接的设备或是上一次连接的设备
 
 	  bluetoothController!!
@@ -142,7 +142,7 @@ ps:每次连接任务之前最好都需要.dispose(),否则你将开启两个连
                 {error-> Log.d(tag, "$error")},
                 { Log.d(tag, "完成")})
 
-#### 8.enable
+### 8.enable
 开启蓝牙
 
 
