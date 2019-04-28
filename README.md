@@ -46,7 +46,7 @@ ps:每次扫描任务之前都需要.dispose(),否则你将开启两个扫描任
 	
 	 bluetoothController!!
                 .writeOnce(byteArray)
-			     .subscribe(
+		   .subscribe(
                     { response -> checkResult(response) },
                     { error -> checkError(error) }
                 )
@@ -68,7 +68,7 @@ ps:每次扫描任务之前都需要.dispose(),否则你将开启两个扫描任
 
 	  bluetoothController!!
                 .writeAuto(list)
-                .subscribe(
+                   .subscribe(
                     { response -> checkResult(response) },
                     { error -> checkError(error) }
                 )
