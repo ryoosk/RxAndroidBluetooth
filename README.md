@@ -6,7 +6,10 @@
 详细使用请移步:   
 [csdn](https://blog.csdn.net/duo_shine/article/details/89672883)      
 [简书](https://www.jianshu.com/p/087c21e70877)   
+#### 依赖
 
+	implementation 'duoshine.rxjava2:rxandroidbluetooth:1.3'
+	
 #### 初始化
 
 	private var bluetoothController: BluetoothWorker? = null
