@@ -3,6 +3,9 @@
 
 基于rxjava2的ble库
 
+详细使用请移步:
+[csdn](https://blog.csdn.net/duo_shine/article/details/89672883)   
+[简书](https://www.jianshu.com/p/087c21e70877)   
 
 #### 初始化
 
