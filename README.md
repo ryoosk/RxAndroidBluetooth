@@ -8,7 +8,7 @@
 [简书](https://www.jianshu.com/p/087c21e70877)   
 #### 依赖
 
-	implementation 'duoshine.rxjava2:rxandroidbluetooth:1.3'
+	implementation 'duoshine.rxjava2:rxandroidbluetooth:1.4'
 	
 #### 初始化
 
