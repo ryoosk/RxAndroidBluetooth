@@ -12,11 +12,19 @@ interface BluetoothWorker {
      * scan
      * settings:scan mode 不传使用默认SCAN_MODE_LOW_LATENCY
      * filters:filter 不传则不过滤 过滤规则用调用者处理 这个规则它可能是： name? address? uuid?....
+     *
+     * note:此方法需要API>=21 否则s会提示找不到ScanSetting、ScanFilter这个类
      */
     fun startLeScan(
-        settings: ScanSettings? = null,
-        filters: MutableList<ScanFilter>? = null
+        settings: ScanSettings?,
+        filters: MutableList<ScanFilter>?
     ): ScanLeObservable
+
+    /**
+     * scan
+     * API小于21 调用此方法扫描
+     */
+    fun startLeScan(): ScanLeObservable
 
     /**
      * writeOnce 单包

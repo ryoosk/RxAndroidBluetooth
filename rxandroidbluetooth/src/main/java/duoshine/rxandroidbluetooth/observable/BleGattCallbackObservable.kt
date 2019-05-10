@@ -301,7 +301,6 @@ object BleGattCallbackObservable : BluetoothGattCallback(), Disposable {
         clear()
         addAll(more)
         loop()
-
     }
 
     /**

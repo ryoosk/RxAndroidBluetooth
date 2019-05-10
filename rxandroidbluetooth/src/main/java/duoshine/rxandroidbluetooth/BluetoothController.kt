@@ -28,6 +28,7 @@ class BluetoothController private constructor(
 ) : BluetoothWorker {
 
 
+
     private var bluetoothAdapter: BluetoothAdapter? = null
     private val tag: String = "duo_shine"
 
@@ -96,6 +97,15 @@ class BluetoothController private constructor(
         filters: MutableList<ScanFilter>?
     ): ScanLeObservable {
         return ScanLeObservable.create(bluetoothAdapter, settings, filters)
+    }
+
+    /**
+     * 扫描ble设备 注意每次扫描之前必须先停止之前的扫描 这个功能由用户控制
+     * dispose来停止线程(扫描也会停止)
+     * 如果没有停止上一次的扫描就开启本次扫描 上一次扫描将在扫描时间结束后停止扫描
+     */
+    override fun startLeScan(): ScanLeObservable {
+        return ScanLeObservable.create(bluetoothAdapter, null, null)
     }
 
     class Builder constructor(private val context: Context) {
