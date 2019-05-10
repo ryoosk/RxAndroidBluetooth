@@ -2,7 +2,6 @@ package duoshine.androidbluetoothpro
 
 import android.Manifest
 import android.bluetooth.BluetoothDevice
-import android.bluetooth.le.ScanFilter
 import android.content.pm.PackageManager
 import android.os.Build
 import android.os.Bundle
@@ -162,7 +161,10 @@ class MainActivity : AppCompatActivity() {
                 .writeOnce(byteArray)
                 .subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())
-                .subscribe { response -> checkResult(response) }
+                .subscribe(
+                    { response -> checkResult(response) },
+                    { error -> checkError(error) }
+                )
         }
 
         ceshi1.setOnClickListener {
@@ -172,11 +174,7 @@ class MainActivity : AppCompatActivity() {
 
     var scanDispose: Disposable? = null
 
-    @RequiresApi(Build.VERSION_CODES.LOLLIPOP)
     private fun startScan() {
-        val filters = ArrayList<ScanFilter>()
-        filters.add(ScanFilter.Builder().setDeviceName("TK-00000CB5").build())
-        filters.add(ScanFilter.Builder().setDeviceName("TL-01020304").build())
         scanObservable.setOnClickListener {
             scanDispose = bluetoothController!!
                 .startLeScan()
@@ -205,6 +203,7 @@ class MainActivity : AppCompatActivity() {
     }
 
     var connectDisposable: Disposable? = null
+
     private fun connect() {
         connect.setOnClickListener {
             connectDisposable = bluetoothController!!
